@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 26)
 project(Meteora)
 
 find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(spdlog REQUIRED)
-find_package(GLEW REQUIRED)
+find_package(glfw3 3.4 REQUIRED)
+find_package(spdlog 1.14.1 REQUIRED)
+find_package(GLEW 2.2.0 REQUIRED)
 
 set(GLFW_USE_WAYLAND ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -17,3 +17,4 @@ configure_file(${CMAKE_SOURCE_DIR}/configuration/system.hpp.in ${CMAKE_SOURCE_DI
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::OpenGL glfw ${GLEW_LIBRARIES} spdlog::spdlog)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/system ${GLEW_INCLUDE_DIRS})
+target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/system/graphics/Backend.cpp)

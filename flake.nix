@@ -14,7 +14,6 @@
       pkgs = import nixpkgs { inherit system; };
     in {
       packages."${system}" = {
-        inherit editor;
         default = pkgs.callPackage ./default.nix { inherit editor; };
       };
     };
