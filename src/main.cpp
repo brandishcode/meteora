@@ -1,16 +1,11 @@
 #include <logger.hpp>
 
-#include <graphics/Backend.hpp>
-
-void error_callback(int error, const char *description) {
-  LOGGER_ERROR("Error: {} return {}", description, error);
-}
+#include <graphics/Context.hpp>
 
 int main(void) {
-  Meteora::Backend backend;
+  Meteora::Context context;
 
-  backend.init();
-  backend.run();
+  context.run();
 
   return 0;
 }
