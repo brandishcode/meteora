@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <string>
 
-#define SHADER_PATH "/development/nixos/meteora/src/shaders/"
+#define SHADER_PATH "../src/shaders/"
 
 namespace Meteora {
 
