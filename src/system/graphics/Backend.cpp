@@ -7,7 +7,10 @@
 #include <string>
 #include <system.hpp>
 
-#include "Context.hpp"
+#include "Backend.hpp"
+#include "ImageLoader.hpp"
+#include "VertexArray.hpp"
+#include "VertexBuffer.hpp"
 
 using namespace Meteora;
 
@@ -28,11 +31,11 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
             severity, message);
 }
 
-Context::Context() { init(); }
+Backend::Backend() { init(); }
 
-Context::~Context() {}
+Backend::~Backend() {}
 
-void Context::init() {
+void Backend::init() {
   glfwSetErrorCallback(error_callback);
 
   glfwInit();
@@ -62,15 +65,15 @@ void Context::init() {
   glDebugMessageCallback(opengl_error_callback, 0);
 }
 
-void Context::run() {
+void Backend::run() {
   VertexArray vaos(1);
-  createVAOs(&vaos);
-  bindVAO(&vaos, 0);
+  vaos.createVAOs();
+  vaos.bindVAO(0);
 
   VertexBuffer vbos(2);
-  createVBOs(&vbos);
+  vbos.createVBOs();
 
-  bindVBO(&vbos, ARRAY, 0); // ABO
+  vbos.bindVBO(ARRAY, 0); // ABO
   float data[] = {
       0.5f,  0.5f,  0.0f, // position
       1.0f,  1.0f,        // texture
@@ -81,17 +84,38 @@ void Context::run() {
       -0.5f, 0.5f,  0.0f, // position
       0.0f,  1.0f         // texture
   };
-  setABOData(data, sizeof(data), 4);
+  vbos.setABOData(data, sizeof(data), 4);
 
-  bindVBO(&vbos, ELEMENT, 1); // EBO
+  vbos.bindVBO(ELEMENT, 1); // EBO
   unsigned int indices[] = {
       0, 1, 3, // first triangle
       1, 2, 3  // second triangle
   };
-  setEBOData(indices, sizeof(indices));
+  vbos.setEBOData(indices, sizeof(indices));
 
-  unbindVBOs();
-  unbindVAOs();
+  unsigned int texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  // set texture filtering parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // load image, create texture and generate mipmaps
+  int width, height, nrChannels;
+  stbi_set_flip_vertically_on_load(true);
+  unsigned char *textureData = stbi_load("../src/textures/upscaled.png", &width,
+                                         &height, &nrChannels, 0);
+  if (textureData) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, textureData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  } else {
+    LOGGER_ERROR("Failed to load texture");
+  }
+  stbi_image_free(textureData);
+
+  vbos.unbindVBOs();
+  vaos.unbindVAOs();
 
   Shader vertexShader = createShader("vertex.vert", VERTEX);
   Shader fragmentShader = createShader("fragment.frag", FRAGMENT);
@@ -103,10 +127,12 @@ void Context::run() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glBindTexture(GL_TEXTURE_2D, texture);
+
     useProgram(program);
-    bindVAO(&vaos, 0);
+    vaos.bindVAO(0);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    unbindVAOs();
+    vaos.unbindVAOs();
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -115,61 +141,14 @@ void Context::run() {
     glfwPollEvents();
   }
 
-  deleteVAOs(&vaos);
-  deleteVBOs(&vbos);
+  vaos.deleteVAOs();
+  vbos.deleteVBOs();
   glDeleteProgram(program);
 
   glfwTerminate();
 }
 
-void Context::createVAOs(VertexArray *vaos) {
-  glGenVertexArrays(vaos->size, vaos->names);
-}
-
-void Context::deleteVAOs(VertexArray *vaos) {
-  glDeleteVertexArrays(vaos->size, vaos->names);
-}
-
-void Context::bindVAO(VertexArray *vaos, unsigned int index) {
-  glBindVertexArray(vaos->names[index]);
-}
-
-void Context::unbindVAOs() { glBindVertexArray(0); }
-
-void Context::createVBOs(VertexBuffer *vbos) {
-  glGenBuffers(vbos->size, vbos->names);
-}
-
-void Context::deleteVBOs(VertexBuffer *vbos) {
-  glDeleteBuffers(vbos->size, vbos->names);
-}
-
-void Context::bindVBO(VertexBuffer *vbos, BufferType buffType,
-                      unsigned int index) {
-  glBindBuffer(buffType, vbos->names[index]);
-}
-
-void Context::unbindVBOs() { glBindBuffer(ARRAY, 0); }
-
-void Context::setABOData(float *data, std::size_t size, unsigned int count) {
-  glBufferData(ARRAY, size, data, GL_STATIC_DRAW);
-  unsigned int stride = size / count;
-
-  // position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void *)0);
-  glEnableVertexAttribArray(0);
-
-  // texture
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride,
-                        (void *)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-}
-
-void Context::setEBOData(unsigned int *data, std::size_t size) {
-  glBufferData(ELEMENT, size, data, GL_STATIC_DRAW);
-}
-
-std::string Context::getShaderSource(std::string path) {
+std::string Backend::getShaderSource(std::string path) {
   std::ifstream fs(SHADER_PATH + path, std::ios::in);
 
   if (!fs.is_open()) {
@@ -188,7 +167,7 @@ std::string Context::getShaderSource(std::string path) {
   return content;
 }
 
-Shader Context::createShader(std::string path, ShaderType type) {
+Shader Backend::createShader(std::string path, ShaderType type) {
   std::string sourceContent = getShaderSource(path);
   const char *source = sourceContent.c_str();
   Shader shader = glCreateShader(type);
@@ -197,7 +176,7 @@ Shader Context::createShader(std::string path, ShaderType type) {
   return shader;
 }
 
-Program Context::createProgram(Shader vertexShader, Shader fragmentShader) {
+Program Backend::createProgram(Shader vertexShader, Shader fragmentShader) {
   Shader program = glCreateProgram();
 
   glAttachShader(program, vertexShader);
@@ -207,4 +186,4 @@ Program Context::createProgram(Shader vertexShader, Shader fragmentShader) {
   return program;
 }
 
-void Context::useProgram(Program program) { glUseProgram(program); }
+void Backend::useProgram(Program program) { glUseProgram(program); }

@@ -1,11 +1,11 @@
 #include <logger.hpp>
 
-#include <graphics/Context.hpp>
+#include <graphics/Backend.hpp>
 
 int main(void) {
-  Meteora::Context context;
+  Meteora::Backend backend;
 
-  context.run();
+  backend.run();
 
   return 0;
 }
