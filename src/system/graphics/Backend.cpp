@@ -1,9 +1,7 @@
 #include <cstddef>
 #include <cstdio>
-#include <fstream>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
-#include <ios>
 #include <logger.hpp>
 #include <stdexcept>
 #include <string>
@@ -11,6 +9,7 @@
 
 #include "Backend.hpp"
 #include "ImageLoader.hpp"
+#include "ShaderProgram.hpp"
 #include "VertexArray.hpp"
 #include "VertexBuffer.hpp"
 
@@ -124,9 +123,10 @@ void Backend::run() {
   vbos.unbindVBOs();
   vaos.unbindVAOs();
 
-  Shader vertexShader = createShader("vertex.glsl", VERTEX);
-  Shader fragmentShader = createShader("fragment.glsl", FRAGMENT);
-  Program program = createProgram(vertexShader, fragmentShader);
+  Shader vertexShader = ShaderProgram::createShader("vertex.glsl", VERTEX);
+  Shader fragmentShader =
+      ShaderProgram::createShader("fragment.glsl", FRAGMENT);
+  Program program = ShaderProgram::createProgram(vertexShader, fragmentShader);
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
@@ -137,7 +137,7 @@ void Backend::run() {
     glBindTexture(GL_TEXTURE_2D, texture);
 
     unsigned int transformLoc = glGetUniformLocation(program, "transform");
-    useProgram(program);
+    ShaderProgram::useProgram(program);
     glm::mat4 trans = glm::mat4(1.0f);
     trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
     trans =
@@ -161,43 +161,3 @@ void Backend::run() {
 
   glfwTerminate();
 }
-
-std::string Backend::getShaderSource(std::string path) {
-  std::ifstream fs(SHADER_PATH + path, std::ios::in);
-
-  if (!fs.is_open()) {
-    std::runtime_error("Shader source read failed");
-  }
-
-  std::string content;
-
-  std::string line = "";
-  while (!fs.eof()) {
-    std::getline(fs, line);
-    content.append(line + "\n");
-  }
-
-  fs.close();
-  return content;
-}
-
-Shader Backend::createShader(std::string path, ShaderType type) {
-  std::string sourceContent = getShaderSource(path);
-  const char *source = sourceContent.c_str();
-  Shader shader = glCreateShader(type);
-  glShaderSource(shader, 1, &source, NULL);
-  glCompileShader(shader);
-  return shader;
-}
-
-Program Backend::createProgram(Shader vertexShader, Shader fragmentShader) {
-  Shader program = glCreateProgram();
-
-  glAttachShader(program, vertexShader);
-  glAttachShader(program, fragmentShader);
-  glLinkProgram(program);
-
-  return program;
-}
-
-void Backend::useProgram(Program program) { glUseProgram(program); }
