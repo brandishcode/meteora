@@ -1,5 +1,5 @@
 { editor, makeWrapper, llvmPackages, pkg-config, cmake, spdlog, glfw-wayland
-, glew, libGLU, ... }:
+, glew, glm, libGLU, ... }:
 
 let vendorLibraries = [ spdlog ];
 in llvmPackages.stdenv.mkDerivation rec {
@@ -10,7 +10,7 @@ in llvmPackages.stdenv.mkDerivation rec {
   src = ./.;
 
   # Dependencies that should exist in the runtime environment
-  buildInputs = [ glfw-wayland glew libGLU ] ++ vendorLibraries;
+  buildInputs = [ glfw-wayland glew glm libGLU ] ++ vendorLibraries;
   # Dependencies that should only exist in the build environment
   nativeBuildInputs = [ makeWrapper pkg-config cmake ] ++ [ editor ];
 

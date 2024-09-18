@@ -1,6 +1,8 @@
 #include <cstddef>
 #include <cstdio>
 #include <fstream>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <ios>
 #include <logger.hpp>
 #include <stdexcept>
@@ -11,6 +13,10 @@
 #include "ImageLoader.hpp"
 #include "VertexArray.hpp"
 #include "VertexBuffer.hpp"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace Meteora;
 
@@ -66,6 +72,7 @@ void Backend::init() {
 }
 
 void Backend::run() {
+
   VertexArray vaos(1);
   vaos.createVAOs();
   vaos.bindVAO(0);
@@ -103,8 +110,8 @@ void Backend::run() {
   // load image, create texture and generate mipmaps
   int width, height, nrChannels;
   stbi_set_flip_vertically_on_load(true);
-  unsigned char *textureData = stbi_load("../src/textures/upscaled.png", &width,
-                                         &height, &nrChannels, 0);
+  unsigned char *textureData = stbi_load("../src/textures/shadow_chaser.png",
+                                         &width, &height, &nrChannels, 0);
   if (textureData) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, textureData);
@@ -117,8 +124,8 @@ void Backend::run() {
   vbos.unbindVBOs();
   vaos.unbindVAOs();
 
-  Shader vertexShader = createShader("vertex.vert", VERTEX);
-  Shader fragmentShader = createShader("fragment.frag", FRAGMENT);
+  Shader vertexShader = createShader("vertex.glsl", VERTEX);
+  Shader fragmentShader = createShader("fragment.glsl", FRAGMENT);
   Program program = createProgram(vertexShader, fragmentShader);
 
   /* Loop until the user closes the window */
@@ -129,7 +136,14 @@ void Backend::run() {
 
     glBindTexture(GL_TEXTURE_2D, texture);
 
+    unsigned int transformLoc = glGetUniformLocation(program, "transform");
     useProgram(program);
+    glm::mat4 trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    trans =
+        glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
     vaos.bindVAO(0);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     vaos.unbindVAOs();
