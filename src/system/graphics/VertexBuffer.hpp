@@ -34,5 +34,7 @@ public:
   inline void setEBOData(unsigned int *data, std::size_t size) {
     glBufferData(ELEMENT, size, data, GL_STATIC_DRAW);
   }
+
+private:
 };
 } // namespace Meteora

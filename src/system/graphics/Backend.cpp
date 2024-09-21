@@ -8,8 +8,8 @@
 #include <system.hpp>
 
 #include "Backend.hpp"
-#include "ImageLoader.hpp"
 #include "ShaderProgram.hpp"
+#include "Texture.hpp"
 #include "VertexArray.hpp"
 #include "VertexBuffer.hpp"
 
@@ -53,7 +53,7 @@ void Backend::init() {
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   glfwWindowHintString(GLFW_WAYLAND_APP_ID, PROJECT_NAME);
 
-  window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+  window = glfwCreateWindow(480, 640, "Hello World", NULL, NULL);
   if (!window) {
     glfwTerminate();
     return;
@@ -81,15 +81,16 @@ void Backend::run() {
 
   vbos.bindVBO(ARRAY, 0); // ABO
   float data[] = {
-      0.5f,  0.5f,  0.0f, // position
-      1.0f,  1.0f,        // texture
-      0.5f,  -0.5f, 0.0f, // position
-      1.0f,  0.0f,        // texture
-      -0.5f, -0.5f, 0.0f, // position
-      0.0f,  0.0f,        // texture
-      -0.5f, 0.5f,  0.0f, // position
-      0.0f,  1.0f         // texture
+      0.5f,         0.5f,         0.0f, // position
+      1.0f / 16.0f, 1.0f / 10.0f,       // texture
+      0.5f,         -0.5f,        0.0f, // position
+      1.0f / 16.0f, 0.0f / 10.0f,       // texture
+      -0.5f,        -0.5f,        0.0f, // position
+      0.0f / 16.0f, 0.0f / 10.0f,       // texture
+      -0.5f,        0.5f,         0.0f, // position
+      0.0f / 16.0f, 1.0f / 10.0f        // texture
   };
+
   vbos.setABOData(data, sizeof(data), 4);
 
   vbos.bindVBO(ELEMENT, 1); // EBO
@@ -99,27 +100,12 @@ void Backend::run() {
   };
   vbos.setEBOData(indices, sizeof(indices));
 
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  // set texture filtering parameters
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                  GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  // load image, create texture and generate mipmaps
-  int width, height, nrChannels;
-  stbi_set_flip_vertically_on_load(true);
-  unsigned char *textureData = stbi_load("../src/textures/shadow_chaser.png",
-                                         &width, &height, &nrChannels, 0);
-  if (textureData) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, textureData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-  } else {
-    LOGGER_ERROR("Failed to load texture");
-  }
-  stbi_image_free(textureData);
+  Texture texture(1);
+  texture.createTextures();
+  texture.bindTexture(0);
+  texture.setTextureData("shadow_chaser.png");
 
+  texture.unbindTextures();
   vbos.unbindVBOs();
   vaos.unbindVAOs();
 
@@ -134,14 +120,16 @@ void Backend::run() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // glBindTexture(GL_TEXTURE_2D, texture);
+    texture.bindTexture(0);
 
     unsigned int transformLoc = glGetUniformLocation(program, "transform");
     ShaderProgram::useProgram(program);
     glm::mat4 trans = glm::mat4(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    trans =
-        glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+    // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    // trans =
+    //     glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f,
+    //     0.0f, 1.0f));
 
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
     vaos.bindVAO(0);

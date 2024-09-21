@@ -8,7 +8,6 @@
 #include <string>
 
 #define SHADER_PATH "../src/shaders/"
-#define TEXTURE_PATH "../src/textures/"
 
 namespace Meteora {
 
