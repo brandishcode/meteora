@@ -1,7 +1,12 @@
 #include <cstddef>
 #include <cstdio>
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
+#include <glm/ext/vector_float2.hpp>
 #include <glm/ext/vector_float3.hpp>
+#include <glm/geometric.hpp>
+#include <glm/trigonometric.hpp>
 #include <logger.hpp>
 #include <stdexcept>
 #include <string>
@@ -10,6 +15,7 @@
 #include "Backend.hpp"
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
+#include "Vertex.hpp"
 #include "VertexArray.hpp"
 #include "VertexBuffer.hpp"
 
@@ -53,7 +59,9 @@ void Backend::init() {
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   glfwWindowHintString(GLFW_WAYLAND_APP_ID, PROJECT_NAME);
 
-  window = glfwCreateWindow(480, 640, "Hello World", NULL, NULL);
+  unsigned int width = 480, height = 480;
+
+  window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
   if (!window) {
     glfwTerminate();
     return;
@@ -67,7 +75,9 @@ void Backend::init() {
   }
 
   glEnable(GL_DEBUG_OUTPUT);
+  glEnable(GL_DEPTH_TEST);
   glDebugMessageCallback(opengl_error_callback, 0);
+  glViewport(0, 0, width, height);
 }
 
 void Backend::run() {
@@ -79,19 +89,29 @@ void Backend::run() {
   VertexBuffer vbos(2);
   vbos.createVBOs();
 
-  vbos.bindVBO(ARRAY, 0); // ABO
-  float data[] = {
-      0.5f,         0.5f,         0.0f, // position
-      1.0f / 16.0f, 1.0f / 10.0f,       // texture
-      0.5f,         -0.5f,        0.0f, // position
-      1.0f / 16.0f, 0.0f / 10.0f,       // texture
-      -0.5f,        -0.5f,        0.0f, // position
-      0.0f / 16.0f, 0.0f / 10.0f,       // texture
-      -0.5f,        0.5f,         0.0f, // position
-      0.0f / 16.0f, 1.0f / 10.0f        // texture
-  };
+  float x = 0.0f, y = 0.0f;
 
-  vbos.setABOData(data, sizeof(data), 4);
+  Vertex vertices[] = {
+      Vertex(vec3(1.0f, 1.0f, 0.0f), vec2((1.0f + x) / 16.0f, 1.0f / 10.0f)),
+      Vertex(vec3(1.0f, -1.0f, 0.0f), vec2((1.0f + x) / 16.0f, 0.0f / 10.0f)),
+      Vertex(vec3(-1.0f, -1.0f, 0.0f), vec2((0.0f + x) / 16.0f, 0.0f / 10.0f)),
+      Vertex(vec3(-1.0f, 1.0f, 0.0f), vec2((0.0f + x) / 16.0f, 1.0f / 10.0f))};
+
+  vbos.bindVBO(ARRAY, 0); // ABO
+  unsigned int count = 4;
+  unsigned int size = count * 5;
+  float *data = new float[size];
+  for (unsigned int i = 0; i < count; i++) {
+    data[i * 5] = vertices[i].data[0];
+    data[i * 5 + 1] = vertices[i].data[1];
+    data[i * 5 + 2] = vertices[i].data[2];
+    data[i * 5 + 3] = vertices[i].data[3];
+    data[i * 5 + 4] = vertices[i].data[4];
+  }
+
+  vbos.setABOData(data, size * sizeof(float), 4);
+
+  // vbos.setABOData(vertices, 80, sizeof(vertices) / sizeof(Vertex));
 
   vbos.bindVBO(ELEMENT, 1); // EBO
   unsigned int indices[] = {
@@ -114,24 +134,31 @@ void Backend::run() {
       ShaderProgram::createShader("fragment.glsl", FRAGMENT);
   Program program = ShaderProgram::createProgram(vertexShader, fragmentShader);
 
+  mat4 model = mat4(1.0f);
+  model = translate(model, vec3(0.5f, 0.5f, 0.0f));
+  model = scale(model, vec3(0.5f, 0.75f, 0.0f));
+  model = scale(model, vec3(0.25f, 0.25f, 0.0f));
+  mat4 view = lookAt(vec3(0.5f, 0.5f, 1.0f), vec3(0.5f, 0.5f, 0.0f),
+                     vec3(0.0f, 1.0f, 0.0f));
+  mat4 projection = ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+
+  unsigned int modelLoc = glGetUniformLocation(program, "model");
+  unsigned int viewLoc = glGetUniformLocation(program, "view");
+  unsigned int projectionLoc = glGetUniformLocation(program, "projection");
+
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
     /* Render here */
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // glBindTexture(GL_TEXTURE_2D, texture);
     texture.bindTexture(0);
 
-    unsigned int transformLoc = glGetUniformLocation(program, "transform");
     ShaderProgram::useProgram(program);
-    glm::mat4 trans = glm::mat4(1.0f);
-    // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    // trans =
-    //     glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f,
-    //     0.0f, 1.0f));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
 
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
     vaos.bindVAO(0);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     vaos.unbindVAOs();
