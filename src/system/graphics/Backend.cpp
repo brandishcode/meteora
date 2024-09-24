@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float2.hpp>
@@ -22,6 +23,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#define RESET_INDEX 999
 
 using namespace Meteora;
 
@@ -61,7 +64,7 @@ void Backend::init() {
 
   unsigned int width = 480, height = 480;
 
-  window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
+  window = glfwCreateWindow(width, height, "Game", NULL, NULL);
   if (!window) {
     glfwTerminate();
     return;
@@ -76,6 +79,10 @@ void Backend::init() {
 
   glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEPTH_TEST);
+
+  glEnable(GL_PRIMITIVE_RESTART);
+  glPrimitiveRestartIndex(RESET_INDEX);
+
   glDebugMessageCallback(opengl_error_callback, 0);
   glViewport(0, 0, width, height);
 }
@@ -89,16 +96,22 @@ void Backend::run() {
   VertexBuffer vbos(2);
   vbos.createVBOs();
 
-  float x = 0.0f, y = 0.0f;
+  float x = 15.0f, y = 0.0f;
 
   Vertex vertices[] = {
-      Vertex(vec3(1.0f, 1.0f, 0.0f), vec2((1.0f + x) / 16.0f, 1.0f / 10.0f)),
-      Vertex(vec3(1.0f, -1.0f, 0.0f), vec2((1.0f + x) / 16.0f, 0.0f / 10.0f)),
-      Vertex(vec3(-1.0f, -1.0f, 0.0f), vec2((0.0f + x) / 16.0f, 0.0f / 10.0f)),
-      Vertex(vec3(-1.0f, 1.0f, 0.0f), vec2((0.0f + x) / 16.0f, 1.0f / 10.0f))};
+      Vertex(vec3(100.0f, 100.0f, 0.0f),
+             vec2((1.0f + x) / 16.0f, 1.0f / 10.0f)),
+      Vertex(vec3(100.0f, 0.0f, 0.0f), vec2((1.0f + x) / 16.0f, 0.0f / 10.0f)),
+      Vertex(vec3(0.0f, 0.0f, 0.0f), vec2((0.0f + x) / 16.0f, 0.0f / 10.0f)),
+      Vertex(vec3(0.0f, 100.0f, 0.0f), vec2((0.0f + x) / 16.0f, 1.0f / 10.0f)),
+      // back square
+      Vertex(vec3(480.0f, 100.0f, 5.0f), vec2((1.0f) / 16.0f, 1.0f / 10.0f)),
+      Vertex(vec3(480.0f, 0.0f, 5.0f), vec2((1.0f) / 16.0f, 0.0f / 10.0f)),
+      Vertex(vec3(380.0f, 0.0f, 5.0f), vec2((0.0f) / 16.0f, 0.0f / 10.0f)),
+      Vertex(vec3(380.0f, 100.0f, 5.0f), vec2((0.0f) / 16.0f, 1.0f / 10.0f))};
 
   vbos.bindVBO(ARRAY, 0); // ABO
-  unsigned int count = 4;
+  unsigned int count = 8;
   unsigned int size = count * 5;
   float *data = new float[size];
   for (unsigned int i = 0; i < count; i++) {
@@ -109,14 +122,17 @@ void Backend::run() {
     data[i * 5 + 4] = vertices[i].data[4];
   }
 
-  vbos.setABOData(data, size * sizeof(float), 4);
+  vbos.setABOData(data, size * sizeof(float), count);
 
   // vbos.setABOData(vertices, 80, sizeof(vertices) / sizeof(Vertex));
 
   vbos.bindVBO(ELEMENT, 1); // EBO
   unsigned int indices[] = {
-      0, 1, 3, // first triangle
-      1, 2, 3  // second triangle
+      0,           1, 3, // first triangle
+      1,           2, 3, // second triangle
+      RESET_INDEX,       // restart
+      4,           5, 7, // third triangle
+      5,           6, 7, // fourth triangle
   };
   vbos.setEBOData(indices, sizeof(indices));
 
@@ -135,12 +151,19 @@ void Backend::run() {
   Program program = ShaderProgram::createProgram(vertexShader, fragmentShader);
 
   mat4 model = mat4(1.0f);
-  model = translate(model, vec3(0.5f, 0.5f, 0.0f));
-  model = scale(model, vec3(0.5f, 0.75f, 0.0f));
-  model = scale(model, vec3(0.25f, 0.25f, 0.0f));
-  mat4 view = lookAt(vec3(0.5f, 0.5f, 1.0f), vec3(0.5f, 0.5f, 0.0f),
-                     vec3(0.0f, 1.0f, 0.0f));
-  mat4 projection = ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+  // model = translate(model, vec3(0.5f, 0.5f, 0.0f));
+  // model = rotate(model, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
+  model = scale(model, vec3(1.0f / 480.0f, 1.0f / 480.0f, 0.0f));
+
+  // mat4 view = lookAt(vec3(0.5f, 0.5f, 1.0f), vec3(0.5f, 0.5f, 0.0f),
+  //                    vec3(0.0f, 1.0f, 0.0f));
+  mat4 view = mat4(1.0f);
+  view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+  // mat4 projection = ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+  // mat4 projection = ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+  mat4 projection = mat4(1.0f);
+  projection =
+      perspective(glm::radians(45.0f), (float)480 / (float)480, 0.1f, 100.0f);
 
   unsigned int modelLoc = glGetUniformLocation(program, "model");
   unsigned int viewLoc = glGetUniformLocation(program, "view");
@@ -160,7 +183,8 @@ void Backend::run() {
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
 
     vaos.bindVAO(0);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 13, GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     vaos.unbindVAOs();
 
     /* Swap front and back buffers */
