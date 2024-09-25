@@ -96,50 +96,45 @@ void Backend::run() {
   VertexBuffer vbos(2);
   vbos.createVBOs();
 
-  float x = 15.0f, y = 0.0f;
+  float x = 0.0f, y = 0.0f;
 
   Vertex vertices[] = {
-      Vertex(vec3(100.0f, 100.0f, 0.0f),
-             vec2((1.0f + x) / 16.0f, 1.0f / 10.0f)),
-      Vertex(vec3(100.0f, 0.0f, 0.0f), vec2((1.0f + x) / 16.0f, 0.0f / 10.0f)),
-      Vertex(vec3(0.0f, 0.0f, 0.0f), vec2((0.0f + x) / 16.0f, 0.0f / 10.0f)),
-      Vertex(vec3(0.0f, 100.0f, 0.0f), vec2((0.0f + x) / 16.0f, 1.0f / 10.0f)),
-      // back square
-      Vertex(vec3(480.0f, 100.0f, 5.0f), vec2((1.0f) / 16.0f, 1.0f / 10.0f)),
-      Vertex(vec3(480.0f, 0.0f, 5.0f), vec2((1.0f) / 16.0f, 0.0f / 10.0f)),
-      Vertex(vec3(380.0f, 0.0f, 5.0f), vec2((0.0f) / 16.0f, 0.0f / 10.0f)),
-      Vertex(vec3(380.0f, 100.0f, 5.0f), vec2((0.0f) / 16.0f, 1.0f / 10.0f))};
+      Vertex(vec3(100.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
+      Vertex(vec3(100.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+      Vertex(vec3(0.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+      Vertex(vec3(0.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
+      // second tile
+      Vertex(vec3(200.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
+      Vertex(vec3(200.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+      Vertex(vec3(100.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+      Vertex(vec3(100.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
+      // third tile
+      Vertex(vec3(300.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
+      Vertex(vec3(300.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+      Vertex(vec3(200.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+      Vertex(vec3(200.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
+
+  };
 
   vbos.bindVBO(ARRAY, 0); // ABO
-  unsigned int count = 8;
-  unsigned int size = count * 5;
-  float *data = new float[size];
-  for (unsigned int i = 0; i < count; i++) {
-    data[i * 5] = vertices[i].data[0];
-    data[i * 5 + 1] = vertices[i].data[1];
-    data[i * 5 + 2] = vertices[i].data[2];
-    data[i * 5 + 3] = vertices[i].data[3];
-    data[i * 5 + 4] = vertices[i].data[4];
-  }
-
-  vbos.setABOData(data, size * sizeof(float), count);
-
-  // vbos.setABOData(vertices, 80, sizeof(vertices) / sizeof(Vertex));
+  vbos.setABOData(vertices, 12);
 
   vbos.bindVBO(ELEMENT, 1); // EBO
   unsigned int indices[] = {
-      0,           1, 3, // first triangle
-      1,           2, 3, // second triangle
-      RESET_INDEX,       // restart
-      4,           5, 7, // third triangle
-      5,           6, 7, // fourth triangle
+      0,           1,  3,     // first triangle
+      1,           2,  3,     // second triangle
+      RESET_INDEX,            // restart
+      4,           5,  7,     // third triangle
+      5,           6,  7,     // fourth triangle
+      RESET_INDEX, 8,  9, 11, // fifth triangle
+      9,           10, 11     // sixth triangle
   };
   vbos.setEBOData(indices, sizeof(indices));
 
   Texture texture(1);
   texture.createTextures();
   texture.bindTexture(0);
-  texture.setTextureData("shadow_chaser.png");
+  texture.setTextureData("rock_wall_tileset.png");
 
   texture.unbindTextures();
   vbos.unbindVBOs();
@@ -183,7 +178,7 @@ void Backend::run() {
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
 
     vaos.bindVAO(0);
-    glDrawElements(GL_TRIANGLE_STRIP, 13, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     vaos.unbindVAOs();
 
