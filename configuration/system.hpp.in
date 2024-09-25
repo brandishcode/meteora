@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdexcept>
 #cmakedefine PROJECT_NAME "@PROJECT_NAME@"
 #define OPENGL_MAJOR_VER 4
 #define OPENGL_MINOR_VER 6

@@ -1,5 +1,5 @@
 { editor, makeWrapper, llvmPackages, pkg-config, cmake, spdlog, glfw-wayland
-, glew, glm, libGLU, ... }:
+, glew, glm, stb, libGLU, ... }:
 
 let vendorLibraries = [ spdlog ];
 in llvmPackages.stdenv.mkDerivation rec {
@@ -25,6 +25,7 @@ in llvmPackages.stdenv.mkDerivation rec {
   '';
 
   shellHook = ''
+    export PKG_CONFIG_PATH=${stb}/lib/pkgconfig
     echo "Development Shell Started"
     runPhase configurePhase
     cd ../

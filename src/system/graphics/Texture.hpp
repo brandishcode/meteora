@@ -2,7 +2,7 @@
 
 #include <string>
 #define STB_IMAGE_IMPLEMENTATION
-#include "vendor/stb_image.h"
+#include <stb/stb_image.h>
 
 #include "graphics/Buffer.hpp"
 #include <logger.hpp>
