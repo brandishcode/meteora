@@ -1,24 +1,27 @@
 #pragma once
 
+#include "graphics/opengl/OpenglAbstracts.hpp"
 #include <string>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-#include "graphics/Buffer.hpp"
 #include <logger.hpp>
 
 #define TEXTURE_PATH "../src/textures/"
 
 namespace Meteora {
 
-class Texture : public Buffer {
+typedef typeof(GL_TEXTURE0) ActiveTexture;
 
-  typedef typeof(GL_TEXTURE0) ActiveTexture;
+class Texture : public Bindings {
 
 public:
-  inline void createTextures() { glGenTextures(size, names); }
+  Texture(Size size) : Bindings(size) {}
+  inline void generate() override { glGenTextures(size, names); }
 
-  inline void bindTexture(unsigned int index) {
+  inline void destroy() override { glDeleteTextures(size, names); }
+
+  inline void bind(BindType type = NONE, unsigned int index = 0) override {
     ActiveTexture activeTexture;
 
     switch (index) {
@@ -32,7 +35,7 @@ public:
     setFilteringParameters();
   }
 
-  inline void unbindTextures() { glBindTexture(GL_TEXTURE_2D, 0); }
+  inline void unbind() override { glBindTexture(GL_TEXTURE_2D, 0); }
 
   inline void setTextureData(std::string name) {
     // load image, create texture and generate mipmaps

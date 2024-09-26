@@ -8,7 +8,7 @@ using namespace glm;
 namespace Meteora {
 class Vertex {
 public:
-  Vertex(vec3 pos, vec2 texPos) : pos(pos), texPos(texPos) {
+  Vertex(vec3 pos, vec2 texPos) : position(pos), texturePosition(texPos) {
     data = new float[5];
     data[0] = pos.x;
     data[1] = pos.y;
@@ -20,7 +20,7 @@ public:
   float *data;
 
 private:
-  vec3 pos;
-  vec2 texPos;
+  vec3 position;
+  vec2 texturePosition;
 };
 } // namespace Meteora

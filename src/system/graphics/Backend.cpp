@@ -13,12 +13,13 @@
 #include <string>
 #include <system.hpp>
 
-#include "Backend.hpp"
 #include "ShaderProgram.hpp"
-#include "Texture.hpp"
-#include "Vertex.hpp"
-#include "VertexArray.hpp"
-#include "VertexBuffer.hpp"
+#include "graphics/Backend.hpp"
+#include "graphics/Mesh.hpp"
+#include "graphics/glm/Vertex.hpp"
+#include "graphics/opengl/Texture.hpp"
+#include "graphics/opengl/VertexArray.hpp"
+#include "graphics/opengl/VertexBuffer.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -36,13 +37,28 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
                                       GLenum severity, GLsizei length,
                                       const GLchar *message,
                                       const void *userParam) {
-  type == GL_DEBUG_TYPE_ERROR
-      ? LOGGER_ERROR(
-            "GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}", type,
-            severity, message)
-      : LOGGER_INFO(
-            "GL CALLBACK: type = 0x{:x}, severity = 0x{:x}, message = {}", type,
-            severity, message);
+  std::string messageType;
+  switch (type) {
+  case GL_DEBUG_TYPE_ERROR:
+    char buffer[100];
+    sprintf(buffer, "GL CALLBACK: severity = 0x%x, message = %s", severity,
+            message);
+    throw std::runtime_error(buffer);
+    return;
+  case GL_DEBUG_TYPE_PERFORMANCE:
+    messageType = "Performance";
+    break;
+  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+    messageType = "Deprecated";
+    break;
+  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+    messageType = "Undefined behavior";
+    break;
+  default:
+    return;
+  }
+  LOGGER_WARN("GL CALLBACK: type = {}, severity = 0x{:x}, message ={} ",
+              messageType, severity, message);
 }
 
 Backend::Backend() { init(); }
@@ -77,24 +93,29 @@ void Backend::init() {
     throw std::runtime_error(errMsg);
   }
 
-  glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEPTH_TEST);
 
   glEnable(GL_PRIMITIVE_RESTART);
   glPrimitiveRestartIndex(RESET_INDEX);
 
+  glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(opengl_error_callback, 0);
   glViewport(0, 0, width, height);
 }
 
 void Backend::run() {
 
+  Mesh mesh(Position{1.0f, 1.0f, 1.0f});
+
+  LOGGER_INFO("Mesh x{} y{} z{}", mesh.position.x, mesh.position.y,
+              mesh.position.z);
+
   VertexArray vaos(1);
-  vaos.createVAOs();
-  vaos.bindVAO(0);
+  vaos.generate();
+  vaos.bind();
 
   VertexBuffer vbos(2);
-  vbos.createVBOs();
+  vbos.generate();
 
   float x = 0.0f, y = 0.0f;
 
@@ -116,10 +137,10 @@ void Backend::run() {
 
   };
 
-  vbos.bindVBO(ARRAY, 0); // ABO
-  vbos.setABOData(vertices, 12);
+  vbos.bind(ARRAY, 0); // ABO
+  vbos.setArrayBuffer(vertices, sizeof(vertices) / sizeof(Vertex));
 
-  vbos.bindVBO(ELEMENT, 1); // EBO
+  vbos.bind(ELEMENT, 1); // EBO
   unsigned int indices[] = {
       0,           1,  3,     // first triangle
       1,           2,  3,     // second triangle
@@ -129,16 +150,16 @@ void Backend::run() {
       RESET_INDEX, 8,  9, 11, // fifth triangle
       9,           10, 11     // sixth triangle
   };
-  vbos.setEBOData(indices, sizeof(indices));
+  vbos.setElementBuffer(indices, sizeof(indices));
 
   Texture texture(1);
-  texture.createTextures();
-  texture.bindTexture(0);
+  texture.generate();
+  texture.bind();
   texture.setTextureData("rock_wall_tileset.png");
 
-  texture.unbindTextures();
-  vbos.unbindVBOs();
-  vaos.unbindVAOs();
+  texture.unbind();
+  vbos.unbind();
+  vaos.unbind();
 
   Shader vertexShader = ShaderProgram::createShader("vertex.glsl", VERTEX);
   Shader fragmentShader =
@@ -170,17 +191,17 @@ void Backend::run() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    texture.bindTexture(0);
+    texture.bind();
 
     ShaderProgram::useProgram(program);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
 
-    vaos.bindVAO(0);
+    vaos.bind();
     glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    vaos.unbindVAOs();
+    vaos.unbind();
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -189,8 +210,9 @@ void Backend::run() {
     glfwPollEvents();
   }
 
-  vaos.deleteVAOs();
-  vbos.deleteVBOs();
+  vaos.destroy();
+  vbos.destroy();
+  texture.destroy();
   glDeleteProgram(program);
 
   glfwTerminate();
