@@ -18,7 +18,20 @@ typedef GLuint Program;
 
 class ShaderProgram {
 public:
-  [[nodiscard]] static std::string getShaderSource(std::string path) {
+  ShaderProgram(std::string vertexShaderSource,
+                std::string fragmentShaderSource) {
+    vertexShader = createShader(vertexShaderSource, VERTEX);
+    fragmentShader = createShader(fragmentShaderSource, FRAGMENT);
+    program = createProgram(vertexShader, fragmentShader);
+  }
+  inline void destroy() { glDeleteProgram(program); }
+
+  inline void useProgram() { glUseProgram(program); }
+
+  const Program getProgram() const { return program; }
+
+private:
+  std::string getShaderSource(std::string path) {
     std::ifstream fs(SHADER_PATH + path, std::ios::in);
 
     if (!fs.is_open()) {
@@ -36,7 +49,7 @@ public:
     fs.close();
     return content;
   }
-  inline static Shader createShader(std::string path, ShaderType type) {
+  inline Shader createShader(std::string path, ShaderType type) {
     std::string sourceContent = getShaderSource(path);
     const char *source = sourceContent.c_str();
     Shader shader = glCreateShader(type);
@@ -44,8 +57,7 @@ public:
     glCompileShader(shader);
     return shader;
   }
-  inline static Program createProgram(Shader vertexShader,
-                                      Shader fragmentShader) {
+  inline Program createProgram(Shader vertexShader, Shader fragmentShader) {
     Shader program = glCreateProgram();
 
     glAttachShader(program, vertexShader);
@@ -54,6 +66,9 @@ public:
 
     return program;
   }
-  inline static void useProgram(Program program) { glUseProgram(program); }
+
+  Shader vertexShader;
+  Shader fragmentShader;
+  Program program;
 };
 } // namespace Meteora

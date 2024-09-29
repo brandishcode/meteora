@@ -13,10 +13,10 @@
 #include <string>
 #include <system.hpp>
 
-#include "ShaderProgram.hpp"
 #include "graphics/Backend.hpp"
 #include "graphics/Mesh.hpp"
 #include "graphics/glm/Vertex.hpp"
+#include "graphics/opengl/ShaderProgram.hpp"
 #include "graphics/opengl/Texture.hpp"
 #include "graphics/opengl/VertexArray.hpp"
 #include "graphics/opengl/VertexBuffer.hpp"
@@ -161,10 +161,7 @@ void Backend::run() {
   vbos.unbind();
   vaos.unbind();
 
-  Shader vertexShader = ShaderProgram::createShader("vertex.glsl", VERTEX);
-  Shader fragmentShader =
-      ShaderProgram::createShader("fragment.glsl", FRAGMENT);
-  Program program = ShaderProgram::createProgram(vertexShader, fragmentShader);
+  ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
 
   mat4 model = mat4(1.0f);
   // model = translate(model, vec3(0.5f, 0.5f, 0.0f));
@@ -181,9 +178,12 @@ void Backend::run() {
   projection =
       perspective(glm::radians(45.0f), (float)480 / (float)480, 0.1f, 100.0f);
 
-  unsigned int modelLoc = glGetUniformLocation(program, "model");
-  unsigned int viewLoc = glGetUniformLocation(program, "view");
-  unsigned int projectionLoc = glGetUniformLocation(program, "projection");
+  unsigned int modelLoc =
+      glGetUniformLocation(shaderProgram.getProgram(), "model");
+  unsigned int viewLoc =
+      glGetUniformLocation(shaderProgram.getProgram(), "view");
+  unsigned int projectionLoc =
+      glGetUniformLocation(shaderProgram.getProgram(), "projection");
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
@@ -193,7 +193,7 @@ void Backend::run() {
 
     texture.bind();
 
-    ShaderProgram::useProgram(program);
+    shaderProgram.useProgram();
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
@@ -213,7 +213,7 @@ void Backend::run() {
   vaos.destroy();
   vbos.destroy();
   texture.destroy();
-  glDeleteProgram(program);
+  shaderProgram.destroy();
 
   glfwTerminate();
 }
