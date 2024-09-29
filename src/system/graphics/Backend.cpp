@@ -16,6 +16,7 @@
 #include "graphics/Backend.hpp"
 #include "graphics/Mesh.hpp"
 #include "graphics/glm/Vertex.hpp"
+#include "graphics/opengl/Renderer.hpp"
 #include "graphics/opengl/ShaderProgram.hpp"
 #include "graphics/opengl/Texture.hpp"
 #include "graphics/opengl/VertexArray.hpp"
@@ -162,53 +163,10 @@ void Backend::run() {
   vaos.unbind();
 
   ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
+  Context context(window, &vaos, &vbos, &shaderProgram, &texture);
 
-  mat4 model = mat4(1.0f);
-  // model = translate(model, vec3(0.5f, 0.5f, 0.0f));
-  // model = rotate(model, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
-  model = scale(model, vec3(1.0f / 480.0f, 1.0f / 480.0f, 0.0f));
-
-  // mat4 view = lookAt(vec3(0.5f, 0.5f, 1.0f), vec3(0.5f, 0.5f, 0.0f),
-  //                    vec3(0.0f, 1.0f, 0.0f));
-  mat4 view = mat4(1.0f);
-  view = translate(view, vec3(0.0f, 0.0f, -3.0f));
-  // mat4 projection = ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
-  // mat4 projection = ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
-  mat4 projection = mat4(1.0f);
-  projection =
-      perspective(glm::radians(45.0f), (float)480 / (float)480, 0.1f, 100.0f);
-
-  unsigned int modelLoc =
-      glGetUniformLocation(shaderProgram.getProgram(), "model");
-  unsigned int viewLoc =
-      glGetUniformLocation(shaderProgram.getProgram(), "view");
-  unsigned int projectionLoc =
-      glGetUniformLocation(shaderProgram.getProgram(), "projection");
-
-  /* Loop until the user closes the window */
-  while (!glfwWindowShouldClose(window)) {
-    /* Render here */
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    texture.bind();
-
-    shaderProgram.useProgram();
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
-
-    vaos.bind();
-    glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    vaos.unbind();
-
-    /* Swap front and back buffers */
-    glfwSwapBuffers(window);
-
-    /* Poll for and process events */
-    glfwPollEvents();
-  }
+  Renderer renderer(&context);
+  renderer.render();
 
   vaos.destroy();
   vbos.destroy();
