@@ -8,16 +8,9 @@ using namespace glm;
 namespace Meteora {
 class Vertex {
 public:
-  Vertex(vec3 pos, vec2 texPos) : position(pos), texturePosition(texPos) {
-    data = new float[5];
-    data[0] = pos.x;
-    data[1] = pos.y;
-    data[2] = pos.z;
-    data[3] = texPos.x;
-    data[4] = texPos.y;
-  }
-  ~Vertex() { delete data; }
-  float *data;
+  Vertex(vec3 position) : position(position) {}
+  Vertex(vec3 position, vec2 texturePosition)
+      : position(position), texturePosition(texturePosition) {}
 
 private:
   vec3 position;
