@@ -24,12 +24,33 @@ public:
   inline void unbind() override { glBindBuffer(ARRAY, 0); }
 
   inline void setArrayBuffer(Vertex *vertices, std::size_t totalSize,
-                             std::size_t elementSize) override {
+                             std::size_t elementSize,
+                             AttribType type) override {
     glBufferData(ARRAY, totalSize, vertices, GL_STATIC_DRAW);
 
     // position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, elementSize, (void *)0);
     glEnableVertexAttribArray(0);
+
+    unsigned int size = 0;
+
+    switch (type) {
+    case RGB:
+      size = 3;
+      break;
+    case RGBA:
+      size = 4;
+      break;
+    case TEXTURE:
+      size = 2;
+      break;
+    default:
+      return;
+    }
+    // color
+    glVertexAttribPointer(1, size, GL_FLOAT, GL_FALSE, elementSize,
+                          (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
   }
 
   inline void setElementBuffer(unsigned int *indices,

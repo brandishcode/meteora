@@ -15,12 +15,12 @@
 
 #include "graphics/Backend.hpp"
 #include "graphics/Mesh.hpp"
-#include "graphics/glm/TexturedVertex.hpp"
+#include "graphics/glm/Vertex.hpp"
+#include "graphics/opengl/OpenglAbstracts.hpp"
 #include "graphics/opengl/Renderer.hpp"
 #include "graphics/opengl/ShaderProgram.hpp"
-#include "graphics/opengl/Texture.hpp"
-#include "graphics/opengl/TexturedVertexBuffer.hpp"
 #include "graphics/opengl/VertexArray.hpp"
+#include "graphics/opengl/VertexBuffer.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -94,83 +94,58 @@ void Backend::init() {
     throw std::runtime_error(errMsg);
   }
 
-  glEnable(GL_DEPTH_TEST);
+  // glEnable(GL_DEPTH_TEST);
 
   glEnable(GL_PRIMITIVE_RESTART);
   glPrimitiveRestartIndex(RESET_INDEX);
 
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glEnable(GL_BLEND);
+
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(opengl_error_callback, 0);
-  glViewport(0, 0, width, height);
 }
 
 void Backend::run() {
 
-  Mesh mesh(Position{1.0f, 1.0f, 1.0f});
-
-  LOGGER_INFO("Mesh x{} y{} z{}", mesh.position.x, mesh.position.y,
-              mesh.position.z);
+  Mesh mesh;
 
   VertexArray vaos(1);
   vaos.generate();
   vaos.bind();
 
-  TexturedVertexBuffer vbos(2);
-  vbos.generate();
+  VertexBuffer vbo(1);
+  vbo.generate();
 
-  float x = 0.0f, y = 0.0f;
-
-  TexturedVertex vertices[] = {
-      TexturedVertex(vec3(100.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
-      TexturedVertex(vec3(100.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-      TexturedVertex(vec3(0.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-      TexturedVertex(vec3(0.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
-      // second tile
-      TexturedVertex(vec3(200.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
-      TexturedVertex(vec3(200.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-      TexturedVertex(vec3(100.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-      TexturedVertex(vec3(100.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
-      // third tile
-      TexturedVertex(vec3(300.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
-      TexturedVertex(vec3(300.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-      TexturedVertex(vec3(200.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-      TexturedVertex(vec3(200.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
-
+  vbo.bind(ARRAY, 0);
+  vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
+  vec4 green(0.0f, 1.0f, 0.0f, 1.0f);
+  vec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
+  Vertex vertices[] = {
+      Vertex(vec3(0.0f, 0.0f, 0.0f), red),
+      Vertex(vec3(0.5f, 0.0f, 0.0f), red),
+      Vertex(vec3(0.0f, 0.0f, 0.0f), green),
+      Vertex(vec3(0.0f, 0.5f, 0.0f), green),
+      Vertex(vec3(0.0f, 0.0f, 0.0f), blue),
+      Vertex(vec3(0.0f, 0.0f, 0.5f), blue),
   };
 
-  vbos.bind(ARRAY, 0); // ABO
-  vbos.setArrayBuffer(vertices, sizeof(vertices), sizeof(TexturedVertex));
+  LOGGER_INFO("Position {} Color {} Texture {}", vertices[0].position.x,
+              vertices[0].rgb.x, vertices[0].texture.x);
 
-  vbos.bind(ELEMENT, 1); // EBO
-  unsigned int indices[] = {
-      0,           1,  3,     // first triangle
-      1,           2,  3,     // second triangle
-      RESET_INDEX,            // restart
-      4,           5,  7,     // third triangle
-      5,           6,  7,     // fourth triangle
-      RESET_INDEX, 8,  9, 11, // fifth triangle
-      9,           10, 11     // sixth triangle
-  };
-  vbos.setElementBuffer(indices, sizeof(indices));
+  vbo.setArrayBuffer(vertices, sizeof(vertices), sizeof(Vertex), RGBA);
 
-  Texture texture(1);
-  texture.generate();
-  texture.bind();
-  texture.setTextureData("rock_wall_tileset.png");
-
-  texture.unbind();
-  vbos.unbind();
+  vbo.unbind();
   vaos.unbind();
 
   ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
-  Context context(window, &vaos, &vbos, &shaderProgram, &texture);
+  Context context(window, &vaos, &vbo, &shaderProgram);
 
   Renderer renderer(&context);
   renderer.render();
 
   vaos.destroy();
-  vbos.destroy();
-  texture.destroy();
+  vbo.destroy();
   shaderProgram.destroy();
 
   glfwTerminate();
