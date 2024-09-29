@@ -3,6 +3,7 @@
 #include "graphics/glm/Vertex.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cstddef>
 
 namespace Meteora {
 
@@ -28,7 +29,8 @@ protected:
 };
 
 struct Buffer {
-  virtual void setArrayBuffer(Vertex *vertices, std::size_t size) = 0;
+  virtual void setArrayBuffer(Vertex *vertices, std::size_t totalSize,
+                              std::size_t elementSize) = 0;
   virtual void setElementBuffer(unsigned int *indices, std::size_t size) = 0;
 
 protected:

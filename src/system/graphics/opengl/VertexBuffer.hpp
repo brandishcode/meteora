@@ -23,19 +23,13 @@ public:
 
   inline void unbind() override { glBindBuffer(ARRAY, 0); }
 
-  inline void setArrayBuffer(Vertex *vertices, std::size_t size) override {
-    std::size_t totalSize = sizeof(Vertex) * size;
+  inline void setArrayBuffer(Vertex *vertices, std::size_t totalSize,
+                             std::size_t elementSize) override {
     glBufferData(ARRAY, totalSize, vertices, GL_STATIC_DRAW);
 
-    unsigned int stride = totalSize / size;
     // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, elementSize, (void *)0);
     glEnableVertexAttribArray(0);
-
-    // texture
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride,
-                          (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
   }
 
   inline void setElementBuffer(unsigned int *indices,

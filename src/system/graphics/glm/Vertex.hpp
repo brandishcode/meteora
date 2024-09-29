@@ -6,9 +6,7 @@ using namespace glm;
 
 namespace Meteora {
 struct Vertex {
-  Vertex(vec3 position, vec2 texturePosition)
-      : position(position), texturePosition(texturePosition) {}
+  Vertex(vec3 position) : position(position) {}
   vec3 position;
-  vec2 texturePosition;
 };
 } // namespace Meteora

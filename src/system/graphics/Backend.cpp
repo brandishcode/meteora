@@ -15,12 +15,12 @@
 
 #include "graphics/Backend.hpp"
 #include "graphics/Mesh.hpp"
-#include "graphics/glm/Vertex.hpp"
+#include "graphics/glm/TexturedVertex.hpp"
 #include "graphics/opengl/Renderer.hpp"
 #include "graphics/opengl/ShaderProgram.hpp"
 #include "graphics/opengl/Texture.hpp"
+#include "graphics/opengl/TexturedVertexBuffer.hpp"
 #include "graphics/opengl/VertexArray.hpp"
-#include "graphics/opengl/VertexBuffer.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -115,31 +115,31 @@ void Backend::run() {
   vaos.generate();
   vaos.bind();
 
-  VertexBuffer vbos(2);
+  TexturedVertexBuffer vbos(2);
   vbos.generate();
 
   float x = 0.0f, y = 0.0f;
 
-  Vertex vertices[] = {
-      Vertex(vec3(100.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
-      Vertex(vec3(100.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-      Vertex(vec3(0.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-      Vertex(vec3(0.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
+  TexturedVertex vertices[] = {
+      TexturedVertex(vec3(100.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
+      TexturedVertex(vec3(100.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+      TexturedVertex(vec3(0.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+      TexturedVertex(vec3(0.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
       // second tile
-      Vertex(vec3(200.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
-      Vertex(vec3(200.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-      Vertex(vec3(100.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-      Vertex(vec3(100.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
+      TexturedVertex(vec3(200.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
+      TexturedVertex(vec3(200.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+      TexturedVertex(vec3(100.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+      TexturedVertex(vec3(100.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
       // third tile
-      Vertex(vec3(300.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
-      Vertex(vec3(300.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
-      Vertex(vec3(200.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
-      Vertex(vec3(200.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
+      TexturedVertex(vec3(300.0f, 100.0f, 0.0f), vec2(1.0f, 1.0f)),
+      TexturedVertex(vec3(300.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+      TexturedVertex(vec3(200.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+      TexturedVertex(vec3(200.0f, 100.0f, 0.0f), vec2(0.0f, 1.0f)),
 
   };
 
   vbos.bind(ARRAY, 0); // ABO
-  vbos.setArrayBuffer(vertices, sizeof(vertices) / sizeof(Vertex));
+  vbos.setArrayBuffer(vertices, sizeof(vertices), sizeof(TexturedVertex));
 
   vbos.bind(ELEMENT, 1); // EBO
   unsigned int indices[] = {
