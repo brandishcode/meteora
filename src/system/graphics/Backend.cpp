@@ -62,11 +62,7 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
               messageType, severity, message);
 }
 
-Backend::Backend() { init(); }
-
-Backend::~Backend() {}
-
-void Backend::init() {
+void Backend::init(int width, int height) {
   glfwSetErrorCallback(error_callback);
 
   glfwInit();
@@ -78,8 +74,6 @@ void Backend::init() {
   glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   glfwWindowHintString(GLFW_WAYLAND_APP_ID, PROJECT_NAME);
-
-  unsigned int width = 480, height = 480;
 
   window = glfwCreateWindow(width, height, "Game", NULL, NULL);
   if (!window) {
@@ -108,6 +102,10 @@ void Backend::init() {
 
 void Backend::run() {
 
+  int width = 480, height = 480;
+
+  init(width, height);
+
   Mesh mesh;
 
   VertexArray vaos(1);
@@ -123,11 +121,11 @@ void Backend::run() {
   vec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
   Vertex vertices[] = {
       Vertex(vec3(0.0f, 0.0f, 0.0f), red),
-      Vertex(vec3(0.5f, 0.0f, 0.0f), red),
+      Vertex(vec3(1.0f, 0.0f, 0.0f), red),
       Vertex(vec3(0.0f, 0.0f, 0.0f), green),
-      Vertex(vec3(0.0f, 0.5f, 0.0f), green),
+      Vertex(vec3(0.0f, 1.0f, 0.0f), green),
       Vertex(vec3(0.0f, 0.0f, 0.0f), blue),
-      Vertex(vec3(0.0f, 0.0f, 0.5f), blue),
+      Vertex(vec3(0.0f, 0.0f, 1.0f), blue),
   };
 
   LOGGER_INFO("Position {} Color {} Texture {}", vertices[0].position.x,
@@ -139,10 +137,25 @@ void Backend::run() {
   vaos.unbind();
 
   ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
-  Context context(window, &vaos, &vbo, &shaderProgram);
 
-  Renderer renderer(&context);
-  renderer.render();
+  Model model(mat4(1.0f),
+              glGetUniformLocation(shaderProgram.getProgram(), "model"));
+  View view(lookAt(vec3(5.0f, 5.0f, 5.0f), vec3(0.0f, 0.0f, 0.0f),
+                   vec3(0.0f, 1.0f, 0.0f)),
+            glGetUniformLocation(shaderProgram.getProgram(), "view"));
+  Projection projection(
+      perspective(radians(45.0f), (float)width / (float)height, 0.0f, 100.0f),
+      glGetUniformLocation(shaderProgram.getProgram(), "projection"));
+
+  Context context(&vaos, &vbo, &shaderProgram, NULL, &model, view, projection);
+
+  while (!glfwWindowShouldClose(window)) {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    Renderer::render(context);
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+  }
 
   vaos.destroy();
   vbo.destroy();

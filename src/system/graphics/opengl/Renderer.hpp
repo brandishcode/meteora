@@ -13,57 +13,44 @@
 #include "graphics/opengl/VertexBuffer.hpp"
 namespace Meteora {
 
-typedef GLFWwindow Window;
+typedef GLint UniformLocation;
+
+typedef struct {
+  mat4 matrix;
+  UniformLocation location;
+} Model, View, Projection;
 
 struct Context {
-  Window *window;
   VertexArray *vertexArray;
   VertexBuffer *vertexBuffer;
   ShaderProgram *shaderProgram;
   Texture *texture;
+  Model *model;
+  View view;
+  Projection projection;
 };
 
 class Renderer {
 public:
-  explicit Renderer(Context *context) : context(context) {}
-  inline void render() {
+  static inline void render(Context &context) {
 
-    mat4 model = mat4(1.0f);
-    // model = translate(model, vec3(0.0f, 0.0f, -2.0f));
-    mat4 view = mat4(1.0f);
-    view = lookAt(vec3(1.0f, 1.0f, 2.0f), vec3(0.0f, 0.0f, 0.0f),
-                  vec3(0.0f, 1.0f, 0.0f));
-    mat4 projection = perspective(radians(45.0f), 1.0f, 0.0f, 100.0f);
-
-    unsigned int modelLoc =
-        glGetUniformLocation(context->shaderProgram->getProgram(), "model");
-    unsigned int viewLoc =
-        glGetUniformLocation(context->shaderProgram->getProgram(), "view");
-    unsigned int projectionLoc = glGetUniformLocation(
-        context->shaderProgram->getProgram(), "projection");
-
-    while (!glfwWindowShouldClose(context->window)) {
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
-
-      if (context->texture != NULL) {
-        context->texture->bind();
-      }
-
-      context->shaderProgram->useProgram();
-
-      glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
-      glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
-      glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
-
-      context->vertexArray->bind();
-      // glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);
-      glDrawArrays(GL_LINES, 0, 6);
-      context->vertexArray->unbind();
-
-      glfwSwapBuffers(context->window);
-      glfwPollEvents();
+    if (context.texture != NULL) {
+      context.texture->bind();
     }
+
+    context.shaderProgram->useProgram();
+
+    glUniformMatrix4fv(context.model->location, 1, GL_FALSE,
+                       value_ptr(context.model->matrix));
+    glUniformMatrix4fv(context.view.location, 1, GL_FALSE,
+                       value_ptr(context.view.matrix));
+    glUniformMatrix4fv(context.projection.location, 1, GL_FALSE,
+                       value_ptr(context.projection.matrix));
+
+    context.vertexArray->bind();
+    // glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_LINES, 0, 6);
+    context.vertexArray->unbind();
   }
 
 private:

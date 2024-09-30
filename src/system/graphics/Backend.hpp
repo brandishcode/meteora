@@ -9,12 +9,10 @@ typedef GLFWwindow Window;
 
 class Backend {
 public:
-  Backend();
-  ~Backend();
   void run();
 
 private:
   Window *window;
-  void init();
+  void init(int width, int height);
 };
 }; // namespace Meteora
