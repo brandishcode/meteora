@@ -14,8 +14,8 @@
 #include <system.hpp>
 
 #include "graphics/Backend.hpp"
-#include "graphics/Mesh.hpp"
 #include "graphics/glm/Vertex.hpp"
+#include "graphics/mesh/AxisMesh.hpp"
 #include "graphics/opengl/OpenglAbstracts.hpp"
 #include "graphics/opengl/Renderer.hpp"
 #include "graphics/opengl/ShaderProgram.hpp"
@@ -106,8 +106,6 @@ void Backend::run() {
 
   init(width, height);
 
-  Mesh mesh;
-
   VertexArray vaos(1);
   vaos.generate();
   vaos.bind();
@@ -116,22 +114,10 @@ void Backend::run() {
   vbo.generate();
 
   vbo.bind(ARRAY, 0);
-  vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
-  vec4 green(0.0f, 1.0f, 0.0f, 1.0f);
-  vec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
-  Vertex vertices[] = {
-      Vertex(vec3(0.0f, 0.0f, 0.0f), red),
-      Vertex(vec3(1.0f, 0.0f, 0.0f), red),
-      Vertex(vec3(0.0f, 0.0f, 0.0f), green),
-      Vertex(vec3(0.0f, 1.0f, 0.0f), green),
-      Vertex(vec3(0.0f, 0.0f, 0.0f), blue),
-      Vertex(vec3(0.0f, 0.0f, 1.0f), blue),
-  };
 
-  LOGGER_INFO("Position {} Color {} Texture {}", vertices[0].position.x,
-              vertices[0].rgb.x, vertices[0].texture.x);
+  AxisMesh axis(Position{0.0f, 0.0f, 0.0f}, Dimension{1.0f, 1.0f, 1.0f});
 
-  vbo.setArrayBuffer(vertices, sizeof(vertices), sizeof(Vertex), RGBA);
+  vbo.setArrayBuffer(axis.data(), axis.size(), sizeof(Vertex), RGBA);
 
   vbo.unbind();
   vaos.unbind();
