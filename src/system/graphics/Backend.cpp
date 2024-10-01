@@ -115,9 +115,9 @@ void Backend::run() {
 
   vbo.bind(ARRAY, 0);
 
-  AxisMesh axis(Position{0.0f, 0.0f, 0.0f}, Dimension{1.0f, 1.0f, 1.0f});
+  AxisMesh axis;
 
-  vbo.setArrayBuffer(axis.data(), axis.size(), sizeof(Vertex), RGBA);
+  vbo.setArrayBuffer(axis.vertices.get(), axis.size, sizeof(Vertex), RGBA);
 
   vbo.unbind();
   vaos.unbind();
