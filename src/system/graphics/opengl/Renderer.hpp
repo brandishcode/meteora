@@ -15,19 +15,47 @@ namespace Meteora {
 
 typedef GLint UniformLocation;
 
+typedef vec3 CameraPosition;
+
 typedef struct {
   mat4 matrix;
   UniformLocation location;
-} Model, View, Projection;
+} View, Projection;
 
-struct Context {
+class Context {
+public:
+  Context(VertexArray *vertexArray, VertexBuffer *vertexBuffer,
+          ShaderProgram *shaderProgram, Texture *texture,
+          CameraPosition cameraPosition, float width, float height)
+      : vertexArray(vertexArray), vertexBuffer(vertexBuffer),
+        shaderProgram(shaderProgram), texture(texture),
+        cameraPosition(cameraPosition),
+        projection(
+            perspective(radians(45.0f), width / height, 0.0f, 100.0f),
+            glGetUniformLocation(shaderProgram->getProgram(), "projection")) {
+    calculateView();
+  }
   VertexArray *vertexArray;
   VertexBuffer *vertexBuffer;
   ShaderProgram *shaderProgram;
   Texture *texture;
-  Model *model;
-  View view;
+
+  void setCameraPosition(CameraPosition cameraPosition) {
+    this->cameraPosition = cameraPosition;
+    calculateView();
+  }
+  Projection getProjection() const { return projection; }
+  View getView() const { return view; }
+
+private:
+  CameraPosition cameraPosition;
   Projection projection;
+  View view;
+  void calculateView() {
+    view = {
+        lookAt(cameraPosition, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)),
+        glGetUniformLocation(shaderProgram->getProgram(), "view")};
+  }
 };
 
 class Renderer {
@@ -40,12 +68,10 @@ public:
 
     context.shaderProgram->useProgram();
 
-    glUniformMatrix4fv(context.model->location, 1, GL_FALSE,
-                       value_ptr(context.model->matrix));
-    glUniformMatrix4fv(context.view.location, 1, GL_FALSE,
-                       value_ptr(context.view.matrix));
-    glUniformMatrix4fv(context.projection.location, 1, GL_FALSE,
-                       value_ptr(context.projection.matrix));
+    glUniformMatrix4fv(context.getView().location, 1, GL_FALSE,
+                       value_ptr(context.getView().matrix));
+    glUniformMatrix4fv(context.getProjection().location, 1, GL_FALSE,
+                       value_ptr(context.getProjection().matrix));
 
     context.vertexArray->bind();
     // glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);

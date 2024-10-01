@@ -124,16 +124,10 @@ void Backend::run() {
 
   ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
 
-  Model model(mat4(1.0f),
-              glGetUniformLocation(shaderProgram.getProgram(), "model"));
-  View view(lookAt(vec3(5.0f, 5.0f, 5.0f), vec3(0.0f, 0.0f, 0.0f),
-                   vec3(0.0f, 1.0f, 0.0f)),
-            glGetUniformLocation(shaderProgram.getProgram(), "view"));
-  Projection projection(
-      perspective(radians(45.0f), (float)width / (float)height, 0.0f, 100.0f),
-      glGetUniformLocation(shaderProgram.getProgram(), "projection"));
-
-  Context context(&vaos, &vbo, &shaderProgram, NULL, &model, view, projection);
+  Context context(&vaos, &vbo, &shaderProgram, NULL,
+                  CameraPosition{5.0f, 5.0f, 5.0f}, (float)width,
+                  (float)height);
+  glfwSetWindowUserPointer(window, &context);
 
   while (!glfwWindowShouldClose(window)) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
