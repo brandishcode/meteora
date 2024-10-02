@@ -30,7 +30,7 @@
 
 using namespace Meteora;
 
-void error_callback(int error, const char *description) {
+void errorCallback(int error, const char *description) {
   throw std::runtime_error(description);
 }
 
@@ -62,8 +62,23 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
               messageType, severity, message);
 }
 
+void processInput(GLFWwindow *window, CameraPosition &cameraPosition,
+                  CameraPosition cameraUp, CameraPosition cameraFront,
+                  float deltaTime) {
+  float cameraSpeed = 2.5 * deltaTime;
+  if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
+    cameraPosition += cameraSpeed * cameraFront;
+  } else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+    cameraPosition -= cameraSpeed * cameraFront;
+  } else if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+    cameraPosition -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+  } else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+    cameraPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+  }
+}
+
 void Backend::init(int width, int height) {
-  glfwSetErrorCallback(error_callback);
+  glfwSetErrorCallback(errorCallback);
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_MAJOR_VER);
@@ -124,12 +139,24 @@ void Backend::run() {
 
   ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
 
-  Context context(&vaos, &vbo, &shaderProgram, NULL,
-                  CameraPosition{5.0f, 5.0f, 5.0f}, (float)width,
-                  (float)height);
+  CameraPosition cameraPosition = CameraPosition{5.0f, 5.0f, 5.0f};
+  CameraPosition cameraFront = CameraPosition{0.0f, 0.0f, 1.0f};
+  CameraPosition cameraUp = CameraPosition{0.0f, 1.0f, 0.0f};
+
+  Context context(&vaos, &vbo, &shaderProgram, NULL, cameraPosition,
+                  (float)width, (float)height);
   glfwSetWindowUserPointer(window, &context);
 
+  float deltaTime = 0.0f, lastFrame = 0.0f;
+
   while (!glfwWindowShouldClose(window)) {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
+    processInput(window, cameraPosition, cameraUp, cameraFront, deltaTime);
+    context.setCameraPosition(cameraPosition);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     Renderer::render(context);
