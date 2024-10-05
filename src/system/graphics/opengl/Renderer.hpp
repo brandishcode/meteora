@@ -10,7 +10,7 @@
 #include "graphics/opengl/ShaderProgram.hpp"
 #include "graphics/opengl/Texture.hpp"
 #include "graphics/opengl/VertexArray.hpp"
-#include "graphics/opengl/VertexBuffer.hpp"
+
 namespace Meteora {
 
 typedef GLint UniformLocation;
@@ -24,19 +24,17 @@ typedef struct {
 
 class Context {
 public:
-  Context(VertexArray *vertexArray, VertexBuffer *vertexBuffer,
-          ShaderProgram *shaderProgram, Texture *texture,
-          CameraPosition cameraPosition, float width, float height)
-      : vertexArray(vertexArray), vertexBuffer(vertexBuffer),
-        shaderProgram(shaderProgram), texture(texture),
-        cameraPosition(cameraPosition),
+  Context(VertexArray *vertexArray, ShaderProgram *shaderProgram,
+          Texture *texture, CameraPosition cameraPosition, float width,
+          float height)
+      : vertexArray(vertexArray), shaderProgram(shaderProgram),
+        texture(texture), cameraPosition(cameraPosition),
         projection(
             perspective(radians(45.0f), width / height, 0.0f, 100.0f),
             glGetUniformLocation(shaderProgram->getProgram(), "projection")) {
     calculateView();
   }
   VertexArray *vertexArray;
-  VertexBuffer *vertexBuffer;
   ShaderProgram *shaderProgram;
   Texture *texture;
 
@@ -62,9 +60,8 @@ class Renderer {
 public:
   static inline void render(Context &context) {
 
-    if (context.texture != NULL) {
+    if (context.texture != NULL)
       context.texture->bind();
-    }
 
     context.shaderProgram->useProgram();
 
@@ -73,10 +70,13 @@ public:
     glUniformMatrix4fv(context.getProjection().location, 1, GL_FALSE,
                        value_ptr(context.getProjection().matrix));
 
-    context.vertexArray->bind();
-    // glDrawElements(GL_TRIANGLE_STRIP, 20, GL_UNSIGNED_INT, 0);
+    if (context.vertexArray != NULL)
+      context.vertexArray->bind();
+
     glDrawArrays(GL_LINES, 0, 6);
-    context.vertexArray->unbind();
+
+    if (context.vertexArray != NULL)
+      context.vertexArray->unbind();
   }
 
 private:

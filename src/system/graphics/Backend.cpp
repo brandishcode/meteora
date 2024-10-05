@@ -14,13 +14,9 @@
 #include <system.hpp>
 
 #include "graphics/Backend.hpp"
-#include "graphics/glm/Vertex.hpp"
-#include "graphics/mesh/AxisMesh.hpp"
-#include "graphics/opengl/OpenglAbstracts.hpp"
 #include "graphics/opengl/Renderer.hpp"
 #include "graphics/opengl/ShaderProgram.hpp"
 #include "graphics/opengl/VertexArray.hpp"
-#include "graphics/opengl/VertexBuffer.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -121,30 +117,21 @@ void Backend::run() {
 
   init(width, height);
 
-  VertexArray vaos(1);
-  vaos.generate();
-  vaos.bind();
+  VertexArray vao(1);
+  vao.generate();
+  vao.bind();
 
-  VertexBuffer vbo(1);
-  vbo.generate();
+  vao.unbind();
 
-  vbo.bind(ARRAY, 0);
-
-  AxisMesh axis;
-
-  vbo.setArrayBuffer(axis.vertices.get(), axis.size, sizeof(Vertex), RGBA);
-
-  vbo.unbind();
-  vaos.unbind();
-
-  ShaderProgram shaderProgram = ShaderProgram("vertex.glsl", "fragment.glsl");
+  ShaderProgram shaderProgram =
+      ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
 
   CameraPosition cameraPosition = CameraPosition{5.0f, 5.0f, 5.0f};
   CameraPosition cameraFront = CameraPosition{0.0f, 0.0f, 1.0f};
   CameraPosition cameraUp = CameraPosition{0.0f, 1.0f, 0.0f};
 
-  Context context(&vaos, &vbo, &shaderProgram, NULL, cameraPosition,
-                  (float)width, (float)height);
+  Context context(&vao, &shaderProgram, NULL, cameraPosition, (float)width,
+                  (float)height);
   glfwSetWindowUserPointer(window, &context);
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
@@ -159,13 +146,13 @@ void Backend::run() {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, width, height);
     Renderer::render(context);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
-  vaos.destroy();
-  vbo.destroy();
+  vao.destroy();
   shaderProgram.destroy();
 
   glfwTerminate();
