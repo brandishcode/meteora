@@ -1,7 +1,7 @@
 #pragma once
 
 #include "math/matrix.hpp"
-#include "math/vertex.hpp"
+#include "math/vector.hpp"
 
 namespace Meteora {
 class Camera {
