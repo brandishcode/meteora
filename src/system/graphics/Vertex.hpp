@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/vertex.hpp"
+#include "math/vector.hpp"
 
 namespace Meteora {
 class Vertex {
