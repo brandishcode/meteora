@@ -7,9 +7,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/trigonometric.hpp>
 
-#include "graphics/opengl/ShaderProgram.hpp"
-#include "graphics/opengl/Texture.hpp"
-#include "graphics/opengl/VertexArray.hpp"
+#include "graphics/render/ShaderProgram.hpp"
+#include "graphics/render/Texture.hpp"
+#include "graphics/render/VertexArray.hpp"
 
 namespace Meteora {
 

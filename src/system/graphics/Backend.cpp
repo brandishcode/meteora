@@ -14,9 +14,9 @@
 #include <system.hpp>
 
 #include "graphics/Backend.hpp"
-#include "graphics/opengl/Renderer.hpp"
-#include "graphics/opengl/ShaderProgram.hpp"
-#include "graphics/opengl/VertexArray.hpp"
+#include "graphics/render/Renderer.hpp"
+#include "graphics/render/ShaderProgram.hpp"
+#include "graphics/render/VertexArray.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -62,7 +62,13 @@ void processInput(GLFWwindow *window, Position &cameraPosition,
                   Position &targetPosition, Position cameraUp,
                   Position cameraFront, float deltaTime) {
   float cameraSpeed = 2.5 * deltaTime;
-  if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
+  if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS &&
+      glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+    cameraPosition -= cameraSpeed * cameraFront;
+    targetPosition -= cameraSpeed * cameraFront;
+    cameraPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+    targetPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+  } else if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
     cameraPosition -= cameraSpeed * cameraFront;
     targetPosition -= cameraSpeed * cameraFront;
   } else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {

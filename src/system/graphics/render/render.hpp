@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/glm/Vertex.hpp"
+#include "graphics/matrix/Vertex.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cstddef>

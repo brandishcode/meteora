@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/opengl/OpenglAbstracts.hpp"
+#include "graphics/render/render.hpp"
 
 namespace Meteora {
 class VertexArray : public Bindings {

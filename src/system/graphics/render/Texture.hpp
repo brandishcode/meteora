@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/opengl/OpenglAbstracts.hpp"
+#include "graphics/render/render.hpp"
 #include <string>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
