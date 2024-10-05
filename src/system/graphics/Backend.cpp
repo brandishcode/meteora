@@ -58,18 +58,22 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
               messageType, severity, message);
 }
 
-void processInput(GLFWwindow *window, CameraPosition &cameraPosition,
-                  CameraPosition cameraUp, CameraPosition cameraFront,
-                  float deltaTime) {
+void processInput(GLFWwindow *window, Position &cameraPosition,
+                  Position &targetPosition, Position cameraUp,
+                  Position cameraFront, float deltaTime) {
   float cameraSpeed = 2.5 * deltaTime;
   if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
-    cameraPosition += cameraSpeed * cameraFront;
-  } else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
     cameraPosition -= cameraSpeed * cameraFront;
+    targetPosition -= cameraSpeed * cameraFront;
+  } else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+    cameraPosition += cameraSpeed * cameraFront;
+    targetPosition += cameraSpeed * cameraFront;
   } else if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-    cameraPosition -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-  } else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
     cameraPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+    targetPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+  } else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
+    cameraPosition -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+    targetPosition -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
   }
 }
 
@@ -104,9 +108,6 @@ void Backend::init(int width, int height) {
   glEnable(GL_PRIMITIVE_RESTART);
   glPrimitiveRestartIndex(RESET_INDEX);
 
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  // glEnable(GL_BLEND);
-
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(opengl_error_callback, 0);
 }
@@ -117,22 +118,20 @@ void Backend::run() {
 
   init(width, height);
 
-  VertexArray vao(1);
-  vao.generate();
-  vao.bind();
+  VertexArray baseVao(1);
+  baseVao.generate();
+  ShaderProgram axisShader = ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
+  ShaderProgram gridShader = ShaderProgram("grid_vert.glsl", "grid_frag.glsl");
 
-  vao.unbind();
+  Position cameraPosition = Position{1.0f, 1.0f, 1.0f};
+  Position targetPosition = Position{0.0f, 0.0f, 0.0f};
+  Position cameraFront = Position{0.0f, 0.0f, 1.0f};
+  Position cameraUp = Position{0.0f, 1.0f, 0.0f};
 
-  ShaderProgram shaderProgram =
-      ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
-
-  CameraPosition cameraPosition = CameraPosition{5.0f, 5.0f, 5.0f};
-  CameraPosition cameraFront = CameraPosition{0.0f, 0.0f, 1.0f};
-  CameraPosition cameraUp = CameraPosition{0.0f, 1.0f, 0.0f};
-
-  Context context(&vao, &shaderProgram, NULL, cameraPosition, (float)width,
-                  (float)height);
-  glfwSetWindowUserPointer(window, &context);
+  Context axisContext(&baseVao, &axisShader, NULL, cameraPosition,
+                      targetPosition, (float)width, (float)height);
+  Context gridContext(&baseVao, &gridShader, NULL, cameraPosition,
+                      targetPosition, (float)width, (float)height);
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
 
@@ -141,19 +140,25 @@ void Backend::run() {
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
-    processInput(window, cameraPosition, cameraUp, cameraFront, deltaTime);
-    context.setCameraPosition(cameraPosition);
+    processInput(window, cameraPosition, targetPosition, cameraUp, cameraFront,
+                 deltaTime);
+
+    gridContext.setPosition(cameraPosition, targetPosition);
+    axisContext.setPosition(cameraPosition, targetPosition);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, width, height);
-    Renderer::render(context);
+    gridContext.enableAlphaBlending();
+    Renderer::render(gridContext, TRIANGLES);
+    gridContext.disableAlphaBlending();
+    // Renderer::render(axisContext, LINES);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
-  vao.destroy();
-  shaderProgram.destroy();
+  baseVao.destroy();
+  axisShader.destroy();
 
   glfwTerminate();
 }

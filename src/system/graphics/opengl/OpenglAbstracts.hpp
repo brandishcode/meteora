@@ -10,6 +10,8 @@ namespace Meteora {
 typedef GLsizei Size;
 typedef GLuint Name;
 
+typedef vec3 Position;
+
 enum BindType {
   NONE,
   ARRAY = GL_ARRAY_BUFFER,
