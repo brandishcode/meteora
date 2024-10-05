@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/opengl.hpp"
 #include "graphics/render/ShaderProgram.hpp"
 #include "graphics/render/Texture.hpp"
 #include "graphics/render/VertexArray.hpp"
@@ -13,12 +14,18 @@ class Renderer {
 public:
   static inline void render(VertexArray *vertexArray,
                             ShaderProgram *shaderProgram, Texture *texture,
-                            Mat4 view, Mat4 projection, RenderMode mode,
-                            unsigned int count) {
+                            Mat4 view, Mat4 projection, float zNear, float zFar,
+                            RenderMode mode, unsigned int count) {
     if (texture != NULL)
       texture->bind();
 
     shaderProgram->useProgram();
+
+    glUniform1f(glGetUniformLocation(shaderProgram->getProgram(), "zNear"),
+                zNear);
+    glUniform1f(glGetUniformLocation(shaderProgram->getProgram(), "zFar"),
+                zFar);
+
     glUniformMatrix4fv(
         glGetUniformLocation(shaderProgram->getProgram(), "view"), 1, GL_FALSE,
         &(view[0].x));

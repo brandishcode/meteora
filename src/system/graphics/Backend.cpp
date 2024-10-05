@@ -96,8 +96,10 @@ void Backend::run() {
 
   Camera camera({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
                 {0.0f, 0.0f, 1.0f});
+  float zNear = 0.01f;
+  float zFar = 100.0f;
   Mat4 projection =
-      perspective(radians(45.0f), (float)width / (float)height, 0.01f, 100.0f);
+      perspective(radians(45.0f), (float)width / (float)height, zNear, zFar);
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
 
@@ -113,7 +115,7 @@ void Backend::run() {
     glViewport(0, 0, width, height);
     Renderer::enableAlphaBlending();
     Renderer::render(&baseVao, &gridShader, NULL, camera.view(), projection,
-                     TRIANGLES, 6);
+                     zNear, zFar, TRIANGLES, 6);
     Renderer::disableAlphaBlending();
     glfwSwapBuffers(window);
     glfwPollEvents();

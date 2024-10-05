@@ -7,6 +7,8 @@ out vec4 FragColor;
 
 uniform mat4 view;
 uniform mat4 projection;
+uniform float zNear;
+uniform float zFar;
 
 vec4 grid(vec3 fragPos3D, float scale, bool drawAxis) {
   vec2 coord = fragPos3D.xz * scale;
@@ -34,16 +36,15 @@ float computeDepth(vec3 pos) {
 float computeLinearDepth(vec3 pos) {
   vec4 clipSpacePos = projection * view * vec4(pos.xyz, 1.0);
   float clipSpaceDepth = (clipSpacePos.z / clipSpacePos.w) * 2.0 - 1.0;
-  float linearDepth = (2.0 * 0.01 * 100) /
-    (100 + 0.01 - clipSpaceDepth * (100 - 1.00));
-  return linearDepth / 100;
+  float linearDepth = (2.0 * zNear * zFar) /
+    (zFar + zNear - clipSpaceDepth * (zFar - zNear));
+  return linearDepth / zFar;
 }
 
 void main() {
   float t = -nearPoint.y / (farPoint.y - nearPoint.y);
   vec3 fragPos3D = nearPoint + t * (farPoint - nearPoint);
   gl_FragDepth = computeDepth(fragPos3D);
-  // FragColor = vec4(0.7, 0.7, 0.7, 1.0 * float(t > 0));
   float linearDepth = computeLinearDepth(fragPos3D);
   float fading = max(0, (0.5 - linearDepth));
   FragColor = (grid(fragPos3D, 10, true) + grid(fragPos3D, 1, true)) * float(t > 0);
