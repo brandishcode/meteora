@@ -5,11 +5,12 @@
 #include <string>
 #include <system.hpp>
 
+#include "camera/Camera.hpp"
 #include "graphics/Backend.hpp"
-#include "graphics/render/Camera.hpp"
 #include "graphics/render/Renderer.hpp"
 #include "graphics/render/ShaderProgram.hpp"
 #include "graphics/render/VertexArray.hpp"
+#include "input/Keyboard.hpp"
 
 #define RESET_INDEX 999
 
@@ -45,31 +46,6 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
   }
   LOGGER_WARN("GL CALLBACK: type = {}, severity = 0x{:x}, message ={} ",
               messageType, severity, message);
-}
-
-void processInput(GLFWwindow *window, Vec3 &cameraPosition,
-                  Vec3 &targetPosition, Vec3 cameraUp, Vec3 cameraFront,
-                  float deltaTime) {
-  float cameraSpeed = 2.5 * deltaTime;
-  if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS &&
-      glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-    cameraPosition -= cameraSpeed * cameraFront;
-    targetPosition -= cameraSpeed * cameraFront;
-    cameraPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-    targetPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-  } else if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
-    cameraPosition -= cameraSpeed * cameraFront;
-    targetPosition -= cameraSpeed * cameraFront;
-  } else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-    cameraPosition += cameraSpeed * cameraFront;
-    targetPosition += cameraSpeed * cameraFront;
-  } else if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-    cameraPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-    targetPosition += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-  } else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
-    cameraPosition -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-    targetPosition -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
-  }
 }
 
 void Backend::init(int width, int height) {
@@ -118,7 +94,8 @@ void Backend::run() {
   ShaderProgram axisShader = ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
   ShaderProgram gridShader = ShaderProgram("grid_vert.glsl", "grid_frag.glsl");
 
-  Camera camera({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+  Camera camera({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
+                {0.0f, 0.0f, 1.0f});
   Mat4 projection =
       perspective(radians(45.0f), (float)width / (float)height, 0.01f, 100.0f);
 
@@ -129,8 +106,7 @@ void Backend::run() {
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
-    processInput(window, camera.position, camera.target, camera.up,
-                 {0.0f, 0.0f, 1.0f}, deltaTime);
+    Keyboard::processInput(window, camera, deltaTime);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);

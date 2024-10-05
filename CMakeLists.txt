@@ -24,5 +24,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/syste
 target_sources(${PROJECT_NAME} PRIVATE 
   ${CMAKE_SOURCE_DIR}/src/system/graphics/Backend.cpp 
   ${CMAKE_SOURCE_DIR}/src/system/graphics/mesh/PrimitiveMesh.cpp
-  ${CMAKE_SOURCE_DIR}/src/system/graphics/render/Camera.cpp
+  ${CMAKE_SOURCE_DIR}/src/system/camera/Camera.cpp
+  ${CMAKE_SOURCE_DIR}/src/system/input/Keyboard.cpp
 )

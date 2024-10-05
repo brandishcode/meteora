@@ -6,10 +6,11 @@
 namespace Meteora {
 class Camera {
 public:
-  Camera(Vec3 position, Vec3 target, Vec3 up);
+  Camera(Vec3 position, Vec3 target, Vec3 up, Vec3 front);
   Mat4 view();
   Vec3 position;
   Vec3 target;
-  Vec3 up;
+  const Vec3 up;
+  const Vec3 front;
 };
 } // namespace Meteora
