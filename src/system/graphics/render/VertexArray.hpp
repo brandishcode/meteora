@@ -1,6 +1,7 @@
 #pragma once
 
-#include "bindable.hpp"
+#include "graphics.hpp"
+#include "graphics/opengl.hpp"
 
 namespace Meteora {
 class VertexArray : public Bindings {

@@ -6,6 +6,7 @@
 #include <system.hpp>
 
 #include "graphics/Backend.hpp"
+#include "graphics/render/Camera.hpp"
 #include "graphics/render/Renderer.hpp"
 #include "graphics/render/ShaderProgram.hpp"
 #include "graphics/render/VertexArray.hpp"
@@ -46,9 +47,9 @@ void GLAPIENTRY opengl_error_callback(GLenum source, GLenum type, GLuint id,
               messageType, severity, message);
 }
 
-void processInput(GLFWwindow *window, Position &cameraPosition,
-                  Position &targetPosition, Position cameraUp,
-                  Position cameraFront, float deltaTime) {
+void processInput(GLFWwindow *window, Vec3 &cameraPosition,
+                  Vec3 &targetPosition, Vec3 cameraUp, Vec3 cameraFront,
+                  float deltaTime) {
   float cameraSpeed = 2.5 * deltaTime;
   if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS &&
       glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
@@ -84,7 +85,7 @@ void Backend::init(int width, int height) {
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
   glfwWindowHintString(GLFW_WAYLAND_APP_ID, PROJECT_NAME);
 
-  window = glfwCreateWindow(width, height, "Game", NULL, NULL);
+  window = glfwCreateWindow(width, height, PROJECT_NAME, NULL, NULL);
   if (!window) {
     glfwTerminate();
     return;
@@ -117,15 +118,9 @@ void Backend::run() {
   ShaderProgram axisShader = ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
   ShaderProgram gridShader = ShaderProgram("grid_vert.glsl", "grid_frag.glsl");
 
-  Position cameraPosition = Position{1.0f, 1.0f, 1.0f};
-  Position targetPosition = Position{0.0f, 0.0f, 0.0f};
-  Position cameraFront = Position{0.0f, 0.0f, 1.0f};
-  Position cameraUp = Position{0.0f, 1.0f, 0.0f};
-
-  Context axisContext(&baseVao, &axisShader, NULL, cameraPosition,
-                      targetPosition, (float)width, (float)height);
-  Context gridContext(&baseVao, &gridShader, NULL, cameraPosition,
-                      targetPosition, (float)width, (float)height);
+  Camera camera({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+  Mat4 projection =
+      perspective(radians(45.0f), (float)width / (float)height, 0.01f, 100.0f);
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
 
@@ -134,19 +129,16 @@ void Backend::run() {
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
-    processInput(window, cameraPosition, targetPosition, cameraUp, cameraFront,
-                 deltaTime);
-
-    gridContext.setPosition(cameraPosition, targetPosition);
-    axisContext.setPosition(cameraPosition, targetPosition);
+    processInput(window, camera.position, camera.target, camera.up,
+                 {0.0f, 0.0f, 1.0f}, deltaTime);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, width, height);
-    gridContext.enableAlphaBlending();
-    Renderer::render(gridContext, TRIANGLES);
-    gridContext.disableAlphaBlending();
-    // Renderer::render(axisContext, LINES);
+    Renderer::enableAlphaBlending();
+    Renderer::render(&baseVao, &gridShader, NULL, camera.view(), projection,
+                     TRIANGLES, 6);
+    Renderer::disableAlphaBlending();
     glfwSwapBuffers(window);
     glfwPollEvents();
   }

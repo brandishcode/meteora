@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../opengl.hpp"
-#include "render.hpp"
+#include "graphics/render/ShaderProgram.hpp"
+#include "graphics/render/Texture.hpp"
+#include "graphics/render/VertexArray.hpp"
 #include <math/matrix.hpp>
 
 namespace Meteora {
@@ -10,28 +11,35 @@ enum RenderMode { LINES = GL_LINES, TRIANGLES = GL_TRIANGLES };
 
 class Renderer {
 public:
-  static inline void render(Context &context, RenderMode mode) {
+  static inline void render(VertexArray *vertexArray,
+                            ShaderProgram *shaderProgram, Texture *texture,
+                            Mat4 view, Mat4 projection, RenderMode mode,
+                            unsigned int count) {
+    if (texture != NULL)
+      texture->bind();
 
-    if (context.texture != NULL)
-      context.texture->bind();
+    shaderProgram->useProgram();
+    glUniformMatrix4fv(
+        glGetUniformLocation(shaderProgram->getProgram(), "view"), 1, GL_FALSE,
+        &(view[0].x));
+    glUniformMatrix4fv(
+        glGetUniformLocation(shaderProgram->getProgram(), "projection"), 1,
+        GL_FALSE, &(projection[0].x));
 
-    context.shaderProgram->useProgram();
+    if (vertexArray != NULL)
+      vertexArray->bind();
 
-    glUniformMatrix4fv(context.getView().location, 1, GL_FALSE,
-                       &(context.getView().matrix[0].x));
-    glUniformMatrix4fv(context.getProjection().location, 1, GL_FALSE,
-                       &(context.getProjection().matrix[0].x));
+    glDrawArrays(mode, 0, count);
 
-    if (context.vertexArray != NULL)
-      context.vertexArray->bind();
-
-    glDrawArrays(mode, 0, 6);
-
-    if (context.vertexArray != NULL)
-      context.vertexArray->unbind();
+    if (vertexArray != NULL)
+      vertexArray->unbind();
   }
 
-private:
-  Context *context;
+  static inline void enableAlphaBlending() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  }
+
+  static inline void disableAlphaBlending() { glDisable(GL_BLEND); }
 };
 } // namespace Meteora

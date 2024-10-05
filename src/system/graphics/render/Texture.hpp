@@ -1,6 +1,7 @@
 #pragma once
 
-#include "bindable.hpp"
+#include "graphics.hpp"
+#include "graphics/opengl.hpp"
 #include <string>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>

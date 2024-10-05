@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../opengl.hpp"
+#include "graphics/opengl.hpp"
 #include "math/Vertex.hpp"
 
 namespace Meteora {

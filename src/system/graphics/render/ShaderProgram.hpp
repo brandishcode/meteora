@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../opengl.hpp"
+#include "graphics/opengl.hpp"
 #include <fstream>
 #include <ios>
 #include <string>
