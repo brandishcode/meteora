@@ -1,15 +1,14 @@
 #pragma once
 
-#include "graphics/matrix/Vertex.hpp"
-#include <glm/ext/vector_float3.hpp>
+#include "math/Vertex.hpp"
 #include <memory>
 
 using namespace glm;
 
 namespace Meteora {
 
-typedef vec3 Position;
-typedef vec3 Dimension;
+typedef Vec3 Position;
+typedef Vec3 Dimension;
 
 class PrimitiveMesh {
 public:

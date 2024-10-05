@@ -1,19 +1,16 @@
 #pragma once
 
-#include <glm/ext/vector_float3.hpp>
-#include <glm/glm.hpp>
-
-using namespace glm;
+#include "math/vertex.hpp"
 
 namespace Meteora {
 class Vertex {
 public:
-  Vertex(vec3 position) : position(position) {}
-  Vertex(vec3 position, vec2 texturePosition)
+  Vertex(Vec3 position) : position(position) {}
+  Vertex(Vec3 position, Vec2 texturePosition)
       : position(position), texturePosition(texturePosition) {}
 
 private:
-  vec3 position;
-  vec2 texturePosition;
+  Vec3 position;
+  Vec2 texturePosition;
 };
 } // namespace Meteora

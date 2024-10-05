@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/render/render.hpp"
+#include "bindable.hpp"
 
 namespace Meteora {
 class VertexArray : public Bindings {

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "graphics/glm/Vertex.hpp"
-#include "graphics/opengl/OpenglAbstracts.hpp"
+#include "bindable.hpp"
 #include <cstddef>
 #include <cstring>
 
@@ -47,6 +46,7 @@ public:
     default:
       return;
     }
+
     // color
     glVertexAttribPointer(1, size, GL_FLOAT, GL_FALSE, elementSize,
                           (void *)(3 * sizeof(float)));
