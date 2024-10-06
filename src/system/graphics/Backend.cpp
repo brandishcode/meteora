@@ -85,7 +85,7 @@ void Backend::init(int width, int height) {
 
 void Backend::run() {
 
-  int width = 480, height = 480;
+  int width = 680, height = 460;
 
   init(width, height);
 
@@ -94,12 +94,12 @@ void Backend::run() {
   ShaderProgram axisShader = ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
   ShaderProgram gridShader = ShaderProgram("grid_vert.glsl", "grid_frag.glsl");
 
-  Camera camera({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
+  Camera camera({10.0f, 10.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
                 {0.0f, 0.0f, 1.0f});
   float zNear = 0.01f;
   float zFar = 100.0f;
   Mat4 projection =
-      perspective(radians(45.0f), (float)width / (float)height, zNear, zFar);
+      perspective(radians(10.0f), (float)width / (float)height, zNear, zFar);
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
 
