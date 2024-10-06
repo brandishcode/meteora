@@ -117,6 +117,8 @@ void Backend::run() {
     Renderer::render(&baseVao, &gridShader, NULL, camera.view(), projection,
                      zNear, zFar, TRIANGLES, 6);
     Renderer::disableAlphaBlending();
+    Renderer::render(&baseVao, &axisShader, NULL, camera.view(), projection,
+                     zNear, zFar, LINES, 6);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }

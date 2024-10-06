@@ -16,7 +16,6 @@ const vec3 pos[4] = vec3[4](
 const int idx[6] = int[6](0, 2, 1, 2, 0, 3);
 
 vec3 unprojectPoint(float x, float y, float z) {
-
   mat4 viewInv = inverse(view);
   mat4 projectionInv = inverse(projection);
   vec4 unprojectedPoint = viewInv * projectionInv * vec4(x, y, z, 1.0);
