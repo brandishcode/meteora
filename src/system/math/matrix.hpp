@@ -17,3 +17,7 @@ inline Mat4 perspective(float fov, float aspectRatio, float zNear, float zFar) {
 inline Mat4 lookAt(Vec3 &eye, Vec3 &center, Vec3 &up) {
   return glm::lookAt(eye, center, up);
 }
+
+inline Mat4 scale(Mat4 &mat, Vec3 &vectorScale) {
+  return glm::scale(mat, vectorScale);
+}

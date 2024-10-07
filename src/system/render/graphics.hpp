@@ -20,7 +20,7 @@ protected:
 struct Buffer {
   ~Buffer() { delete arrayBuffer; }
   virtual void setArrayBuffer(Vertex *vertices, std::size_t totalSize,
-                              std::size_t elementSize, AttribType type) = 0;
+                              AttribType type) = 0;
   virtual void setElementBuffer(unsigned int *indices, std::size_t size) = 0;
 
 protected:

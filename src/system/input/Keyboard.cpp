@@ -25,6 +25,7 @@ void Keyboard::processInput(GLFWwindow *window, Camera &camera,
   } else if (isRight(window)) {
     right(camera, speed);
   }
+  camera.calculateView();
 }
 
 void Keyboard::up(Camera &camera, float speed) {

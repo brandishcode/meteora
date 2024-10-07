@@ -23,7 +23,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::OpenGL glfw GLEW::glew spd
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/system ${STB_INCLUDEDIR})
 target_sources(${PROJECT_NAME} PRIVATE 
   ${CMAKE_SOURCE_DIR}/src/system/Backend.cpp 
-  ${CMAKE_SOURCE_DIR}/src/system/mesh/PrimitiveMesh.cpp
+  ${CMAKE_SOURCE_DIR}/src/system/mesh/Mesh.cpp
+  ${CMAKE_SOURCE_DIR}/src/system/mesh/Square.cpp
   ${CMAKE_SOURCE_DIR}/src/system/camera/Camera.cpp
   ${CMAKE_SOURCE_DIR}/src/system/input/Keyboard.cpp
 )

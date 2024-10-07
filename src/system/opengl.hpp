@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+namespace Meteora {
 typedef GLsizei Size;
 typedef GLuint Name;
 typedef GLFWwindow Window;
@@ -23,3 +24,9 @@ enum BindType {
 };
 
 enum AttribType { RGB, RGBA, TEXTURE };
+
+namespace Render {
+enum Mode { LINES = GL_LINES, TRIANGLES = GL_TRIANGLES };
+enum Method { ARRAY, ELEMENT };
+} // namespace Render
+} // namespace Meteora
