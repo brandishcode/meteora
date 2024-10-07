@@ -5,12 +5,12 @@
 #include <string>
 #include <system.hpp>
 
+#include "Backend.hpp"
 #include "camera/Camera.hpp"
-#include "graphics/Backend.hpp"
-#include "graphics/render/Renderer.hpp"
-#include "graphics/render/ShaderProgram.hpp"
-#include "graphics/render/VertexArray.hpp"
 #include "input/Keyboard.hpp"
+#include "render/Renderer.hpp"
+#include "render/ShaderProgram.hpp"
+#include "render/VertexArray.hpp"
 
 #define RESET_INDEX 999
 
@@ -117,8 +117,8 @@ void Backend::run() {
     Renderer::render(&baseVao, &gridShader, NULL, camera.view(), projection,
                      zNear, zFar, TRIANGLES, 6);
     Renderer::disableAlphaBlending();
-    Renderer::render(&baseVao, &axisShader, NULL, camera.view(), projection,
-                     zNear, zFar, LINES, 6);
+    // Renderer::render(&baseVao, &axisShader, NULL, camera.view(), projection,
+    //                  zNear, zFar, LINES, 6);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }

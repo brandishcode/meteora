@@ -1,7 +1,7 @@
 #pragma once
 
 #include "graphics.hpp"
-#include "graphics/opengl.hpp"
+#include "opengl.hpp"
 #include <cstddef>
 #include <cstring>
 

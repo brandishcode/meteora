@@ -1,9 +1,9 @@
 #pragma once
 
-#include "graphics/opengl.hpp"
-#include "graphics/render/ShaderProgram.hpp"
-#include "graphics/render/Texture.hpp"
-#include "graphics/render/VertexArray.hpp"
+#include "opengl.hpp"
+#include "render/ShaderProgram.hpp"
+#include "render/Texture.hpp"
+#include "render/VertexArray.hpp"
 #include <math/matrix.hpp>
 
 namespace Meteora {

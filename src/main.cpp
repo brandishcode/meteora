@@ -1,6 +1,6 @@
 #include <logger.hpp>
 
-#include <graphics/Backend.hpp>
+#include <Backend.hpp>
 
 int main(void) {
   Meteora::Backend backend;

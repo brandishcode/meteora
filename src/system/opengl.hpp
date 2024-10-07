@@ -5,6 +5,16 @@
 
 typedef GLsizei Size;
 typedef GLuint Name;
+typedef GLFWwindow Window;
+
+enum KeyCode {
+  PERIOD = GLFW_KEY_PERIOD,
+  E = GLFW_KEY_E,
+  O = GLFW_KEY_O,
+  U = GLFW_KEY_U
+};
+
+enum KeyAction { PRESS = GLFW_PRESS };
 
 enum BindType {
   NONE,

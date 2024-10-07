@@ -1,28 +1,28 @@
 #pragma once
 
 #include "camera/Camera.hpp"
-#include "graphics/opengl.hpp"
+#include "opengl.hpp"
 
 namespace Meteora {
 class Keyboard {
 public:
-  static void processInput(GLFWwindow *window, Camera &camera, float deltaTime);
+  static void processInput(Window *window, Camera &camera, float deltaTime);
 
 private:
-  inline static bool isUp(GLFWwindow *window) {
-    return glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS;
+  inline static bool isUp(Window *window) {
+    return glfwGetKey(window, PERIOD) == PRESS;
   }
 
-  inline static bool isDown(GLFWwindow *window) {
-    return glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS;
+  inline static bool isDown(Window *window) {
+    return glfwGetKey(window, E) == PRESS;
   }
 
-  inline static bool isLeft(GLFWwindow *window) {
-    return glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS;
+  inline static bool isLeft(Window *window) {
+    return glfwGetKey(window, O) == PRESS;
   }
 
-  inline static bool isRight(GLFWwindow *window) {
-    return glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS;
+  inline static bool isRight(Window *window) {
+    return glfwGetKey(window, U) == PRESS;
   }
 
   static void up(Camera &camera, float speed);

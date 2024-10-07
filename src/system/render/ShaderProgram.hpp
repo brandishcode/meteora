@@ -1,8 +1,7 @@
 #pragma once
 
-#include "graphics/opengl.hpp"
+#include "opengl.hpp"
 #include <fstream>
-#include <ios>
 #include <string>
 
 #define SHADER_PATH "../src/shaders/"
