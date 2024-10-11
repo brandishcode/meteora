@@ -57,5 +57,8 @@ public:
   }
 
   static inline void disableAlphaBlending() { glDisable(GL_BLEND); }
+
+  static inline void enableDepthTesting() { glEnable(GL_DEPTH_TEST); }
+  static inline void disableDepthTesting() { glDisable(GL_DEPTH_TEST); }
 };
 } // namespace Meteora

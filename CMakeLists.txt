@@ -25,6 +25,7 @@ target_sources(${PROJECT_NAME} PRIVATE
   ${CMAKE_SOURCE_DIR}/src/system/Backend.cpp 
   ${CMAKE_SOURCE_DIR}/src/system/mesh/Mesh.cpp
   ${CMAKE_SOURCE_DIR}/src/system/mesh/Square.cpp
+  ${CMAKE_SOURCE_DIR}/src/system/mesh/RectangularPrism.cpp
   ${CMAKE_SOURCE_DIR}/src/system/camera/Camera.cpp
   ${CMAKE_SOURCE_DIR}/src/system/input/Keyboard.cpp
 )

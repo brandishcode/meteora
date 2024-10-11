@@ -8,7 +8,7 @@
 #include "Backend.hpp"
 #include "camera/Camera.hpp"
 #include "input/Keyboard.hpp"
-#include "mesh/Square.hpp"
+#include "mesh/RectangularPrism.hpp"
 #include "opengl.hpp"
 #include "render/Renderer.hpp"
 #include "render/ShaderProgram.hpp"
@@ -77,10 +77,8 @@ void Backend::init(int width, int height) {
     throw std::runtime_error(errMsg);
   }
 
-  // glEnable(GL_DEPTH_TEST);
-
-  glEnable(GL_PRIMITIVE_RESTART);
-  glPrimitiveRestartIndex(RESET_INDEX);
+  // glEnable(GL_PRIMITIVE_RESTART);
+  // glPrimitiveRestartIndex(RESET_INDEX);
 
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(opengl_error_callback, 0);
@@ -98,10 +96,12 @@ void Backend::run() {
   VertexBuffer vbo(2);
   vbo.generate();
   vbo.bind(BindType::ARRAY, 0);
-  Square square;
-  vbo.setArrayBuffer(square.vertices.get(), square.size, RGB);
+  RectangularPrism rectangularPrism;
+  vbo.setArrayBuffer(rectangularPrism.vertices.get(), rectangularPrism.size,
+                     RGB);
   vbo.bind(BindType::ELEMENT, 1);
-  vbo.setElementBuffer(square.indices.get(), square.indicesSize);
+  vbo.setElementBuffer(rectangularPrism.indices.get(),
+                       rectangularPrism.indicesSize);
   vbo.unbind();
   objectVao.unbind();
 
@@ -132,19 +132,18 @@ void Backend::run() {
     Keyboard::processInput(window, camera, deltaTime);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, width, height);
     Renderer::enableAlphaBlending();
     Renderer::render(&baseVao, &gridShader, NULL, model, camera.getView(),
                      projection, zNear, zFar, Render::TRIANGLES, 6,
                      Render::ARRAY);
     Renderer::disableAlphaBlending();
-    Renderer::render(&baseVao, &axisShader, NULL, model, camera.getView(),
-                     projection, zNear, zFar, Render::LINES, 6, Render::ARRAY);
-
+    Renderer::enableDepthTesting();
     Renderer::render(&objectVao, &objectShader, NULL, model, camera.getView(),
-                     projection, zNear, zFar, Render::TRIANGLES, 6,
+                     projection, zNear, zFar, Render::TRIANGLES, 36,
                      Render::ELEMENT);
+    Renderer::disableDepthTesting();
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
