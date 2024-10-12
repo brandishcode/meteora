@@ -27,6 +27,6 @@ enum AttribType { RGB, RGBA, TEXTURE };
 
 namespace Render {
 enum Mode { LINES = GL_LINES, TRIANGLES = GL_TRIANGLES };
-enum Method { ARRAY, ELEMENT };
+enum Method { ARRAY, ELEMENT, ELEMENT_INSTANCED };
 } // namespace Render
 } // namespace Meteora

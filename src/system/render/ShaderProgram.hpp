@@ -1,5 +1,6 @@
 #pragma once
 
+#include "math/matrix.hpp"
 #include "opengl.hpp"
 #include <fstream>
 #include <string>
@@ -21,9 +22,21 @@ public:
     fragmentShader = createShader(fragmentShaderSource, FRAGMENT);
     program = createProgram(vertexShader, fragmentShader);
   }
+
+  template <typename T> void setUniform(std::string name, T value);
+  template <> void setUniform(std::string name, float value) {
+    glUniform1f(glGetUniformLocation(program, name.c_str()), value);
+  }
+  template <> void setUniform(std::string name, Mat4 value) {
+    glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE,
+                       &(value[0].x));
+  }
+
   inline void destroy() { glDeleteProgram(program); }
 
   inline void useProgram() { glUseProgram(program); }
+
+  inline void unuseProgram() { glUseProgram(0); }
 
   const Program getProgram() const { return program; }
 

@@ -111,7 +111,6 @@ void Backend::run() {
   VertexArray baseVao(1);
   baseVao.generate();
 
-  ShaderProgram axisShader = ShaderProgram("axis_vert.glsl", "axis_frag.glsl");
   ShaderProgram gridShader = ShaderProgram("grid_vert.glsl", "grid_frag.glsl");
 
   Camera camera({10.0f, 10.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
@@ -121,6 +120,16 @@ void Backend::run() {
   Mat4 model = scale(Mat4(1.0f), Vec3(0.5f, 0.5f, 0.5f));
   Mat4 projection =
       perspective(radians(10.0f), (float)width / (float)height, zNear, zFar);
+
+  gridShader.useProgram();
+  gridShader.setUniform("zNear", zNear);
+  gridShader.setUniform("zFar", zFar);
+  gridShader.unuseProgram();
+
+  objectShader.useProgram();
+  objectShader.setUniform("zNear", zNear);
+  objectShader.setUniform("zFar", zFar);
+  objectShader.unuseProgram();
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
 
@@ -134,22 +143,31 @@ void Backend::run() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, width, height);
+
+    gridShader.useProgram();
+    gridShader.setUniform("model", model);
+    gridShader.setUniform("view", camera.getView());
+    gridShader.setUniform("projection", projection);
+
     Renderer::enableAlphaBlending();
-    Renderer::render(&baseVao, &gridShader, NULL, model, camera.getView(),
-                     projection, zNear, zFar, Render::TRIANGLES, 6,
-                     Render::ARRAY);
+    Renderer::render(&baseVao, NULL, Render::TRIANGLES, 6, Render::ARRAY);
     Renderer::disableAlphaBlending();
+
+    objectShader.useProgram();
+    objectShader.setUniform("model", model);
+    objectShader.setUniform("view", camera.getView());
+    objectShader.setUniform("projection", projection);
+
     Renderer::enableDepthTesting();
-    Renderer::render(&objectVao, &objectShader, NULL, model, camera.getView(),
-                     projection, zNear, zFar, Render::TRIANGLES, 36,
-                     Render::ELEMENT);
+    Renderer::render(&objectVao, NULL, Render::TRIANGLES, 36, Render::ELEMENT);
     Renderer::disableDepthTesting();
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
   baseVao.destroy();
-  axisShader.destroy();
+  objectShader.destroy();
+  gridShader.destroy();
 
   glfwTerminate();
 }
