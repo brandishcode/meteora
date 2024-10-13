@@ -31,6 +31,9 @@ public:
     glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE,
                        &(value[0].x));
   }
+  template <> void setUniform(std::string name, Vec3 value) {
+    glUniform3fv(glGetUniformLocation(program, name.c_str()), 1, &(value.x));
+  }
 
   inline void destroy() { glDeleteProgram(program); }
 

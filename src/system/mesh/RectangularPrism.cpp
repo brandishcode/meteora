@@ -2,36 +2,50 @@
 
 namespace Meteora {
 RectangularPrism::RectangularPrism() : Mesh(8, Vec3{1.0f, 1.0f, 1.0f}, 36) {
+  setVertices();
+  setIndices();
+}
+
+RectangularPrism::RectangularPrism(Vec3 color, Vec3 position)
+    : Mesh(8, Vec3{1.0f, 1.0f, 1.0f}, 36, Vec4{color.x, color.y, color.z, 0.0f},
+           position) {
+  setVertices();
+  setIndices();
+}
+
+void RectangularPrism::setVertices() {
   float halfLength = dimension.x / 2.0f;
   float halfWidth = dimension.y / 2.0f;
   float halfDepth = dimension.z / 2.0f;
   Vertex *ptr = vertices.get();
   ptr[0] = Vertex{Vec3{position.x - halfWidth, position.y - halfDepth,
                        position.z - halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
   ptr[1] = Vertex{Vec3{position.x + halfWidth, position.y - halfDepth,
                        position.z - halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
   ptr[2] = Vertex{Vec3{position.x - halfWidth, position.y - halfDepth,
                        position.z + halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
   ptr[3] = Vertex{Vec3{position.x + halfWidth, position.y - halfDepth,
                        position.z + halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
 
   ptr[4] = Vertex{Vec3{position.x - halfWidth, position.y + halfDepth,
                        position.z - halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
   ptr[5] = Vertex{Vec3{position.x + halfWidth, position.y + halfDepth,
                        position.z - halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
   ptr[6] = Vertex{Vec3{position.x - halfWidth, position.y + halfDepth,
                        position.z + halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
   ptr[7] = Vertex{Vec3{position.x + halfWidth, position.y + halfDepth,
                        position.z + halfWidth},
-                  Vec3{1.0f, 1.0f, 0.0f}};
+                  color};
+}
 
+void RectangularPrism::setIndices() {
   unsigned int *idxPtr = indices.get();
   // top
   idxPtr[0] = 0;

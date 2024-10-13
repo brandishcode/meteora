@@ -90,12 +90,35 @@ void Backend::run() {
 
   init(width, height);
 
+  Vec3 lightColor{1.0f, 1.0f, 1.0f};
+
+  VertexArray lightVao(1);
+  lightVao.generate();
+  lightVao.bind();
+  VertexBuffer lightVbo(2);
+  lightVbo.generate();
+  lightVbo.bind(BindType::ARRAY, 0);
+  RectangularPrism light(lightColor, Vec3{-2.0f, 0.0f, 2.0f});
+  lightVbo.setArrayBuffer(light.vertices.get(), light.size, RGB);
+  lightVbo.bind(BindType::ELEMENT, 1);
+  lightVbo.setElementBuffer(light.indices.get(), light.indicesSize);
+  lightVbo.unbind();
+  lightVao.unbind();
+
+  ShaderProgram lightShader =
+      ShaderProgram("light_vert.glsl", "light_frag.glsl");
+
   VertexArray objectVao(1);
   objectVao.generate();
   objectVao.bind();
   VertexBuffer vbo(2);
   vbo.generate();
   vbo.bind(BindType::ARRAY, 0);
+  // Texture texture(1);
+  // texture.generate();
+  // texture.bind(TEXTURE2D);
+  // texture.setTextureData("rock_wall_tileset.png");
+  // texture.unbind();
   RectangularPrism rectangularPrism;
   vbo.setArrayBuffer(rectangularPrism.vertices.get(), rectangularPrism.size,
                      RGB);
@@ -124,12 +147,24 @@ void Backend::run() {
   gridShader.useProgram();
   gridShader.setUniform("zNear", zNear);
   gridShader.setUniform("zFar", zFar);
+  gridShader.setUniform("model", model);
+  gridShader.setUniform("projection", projection);
   gridShader.unuseProgram();
 
   objectShader.useProgram();
+  objectShader.setUniform("lightColor", lightColor);
   objectShader.setUniform("zNear", zNear);
   objectShader.setUniform("zFar", zFar);
+  objectShader.setUniform("model", model);
+  objectShader.setUniform("projection", projection);
   objectShader.unuseProgram();
+
+  lightShader.useProgram();
+  lightShader.setUniform("zNear", zNear);
+  lightShader.setUniform("zFar", zFar);
+  lightShader.setUniform("model", model);
+  lightShader.setUniform("projection", projection);
+  lightShader.unuseProgram();
 
   float deltaTime = 0.0f, lastFrame = 0.0f;
 
@@ -145,27 +180,33 @@ void Backend::run() {
     glViewport(0, 0, width, height);
 
     gridShader.useProgram();
-    gridShader.setUniform("model", model);
     gridShader.setUniform("view", camera.getView());
-    gridShader.setUniform("projection", projection);
 
     Renderer::enableAlphaBlending();
     Renderer::render(&baseVao, NULL, Render::TRIANGLES, 6, Render::ARRAY);
     Renderer::disableAlphaBlending();
 
     objectShader.useProgram();
-    objectShader.setUniform("model", model);
     objectShader.setUniform("view", camera.getView());
-    objectShader.setUniform("projection", projection);
 
     Renderer::enableDepthTesting();
     Renderer::render(&objectVao, NULL, Render::TRIANGLES, 36, Render::ELEMENT);
     Renderer::disableDepthTesting();
+
+    lightShader.useProgram();
+    lightShader.setUniform("view", camera.getView());
+
+    Renderer::enableDepthTesting();
+    Renderer::render(&lightVao, NULL, Render::TRIANGLES, 36, Render::ELEMENT);
+    Renderer::disableDepthTesting();
+
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
   baseVao.destroy();
+  objectVao.destroy();
+  lightVao.destroy();
   objectShader.destroy();
   gridShader.destroy();
 
